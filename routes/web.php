@@ -67,11 +67,7 @@ Route::get('/forms/create', function () {
     return Inertia::render('FormBuilder');
 });
 
-Route::post('/forms', function (Request $request) {
-    $request->validate([
-        'title' => 'required|string',
-        'schema' => 'required|array'
-    ]);
+Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
 
     $form=Form::create([
         'title' => $request->title,
