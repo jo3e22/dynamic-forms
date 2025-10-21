@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Form;
 use App\Models\FormSubmission;
+use App\Http\Controllers\Form\FormController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -16,39 +17,16 @@ Route::get('dashboard', function () {
 
 
 
-Route::get('/form/{id}', function ($id) {
-    $form = Form::findOrFail($id);
-
-    return Inertia::render('DynamicForm', [
+Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
+Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create');
+Route::get('/forms/{form}/edit', function (Form $form) {
+    return Inertia::render('forms/FormBuilder', [
         'formId' => $form->id,
-        'questions' => $form->schema,
-        'mode' => 'fill'
-    ]);
-});
-
-Route::get('/form-edit', function () {
-    $formSchema = [
-        ['type' => 'text', 'label' => 'Your name', 'required' => true],
-        ['type' => 'select', 'label' => 'Favourite colour', 'options' => ['Red', 'Blue', 'Green']]
-    ];
-
-    return Inertia::render('DynamicForm', [
-        'questions' => $formSchema,
+        'questions' => $form->fields,
         'mode' => 'edit'
     ]);
-});
+})->name('forms.edit');
 
-Route::get('/form-preview', function () {
-    $formSchema = [
-        ['type' => 'text', 'label' => 'Your name', 'required' => true],
-        ['type' => 'select', 'label' => 'Favourite colour', 'options' => ['Red', 'Blue', 'Green']]
-    ];
-
-    return Inertia::render('DynamicForm', [
-        'questions' => $formSchema,
-        'mode' => 'preview'
-    ]);
-});
 
 Route::post('/form/{id}/submit', function (Request $request, $id) {
     $request->validate([
@@ -63,19 +41,19 @@ Route::post('/form/{id}/submit', function (Request $request, $id) {
     return redirect('/thank-you');
 });
 
-Route::get('/forms/create', function () {
-    return Inertia::render('FormBuilder');
-});
 
-Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
 
-    $form=Form::create([
-        'title' => $request->title,
-        'schema' => $request->schema
+
+
+Route::get('/forms/{form}', function (Form $form) {
+    return Inertia::render('DynamicForm', [
+        'formId' => $form->id,
+        'questions' => $form->fields,
+        'mode' => 'fill'
     ]);
+})->name('forms.show');
 
-    return redirect("/form/{$form->id}");
-});
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

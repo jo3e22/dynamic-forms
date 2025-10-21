@@ -14,7 +14,7 @@ function addQuestion() {
 function saveForm() {
   router.post('/forms', {
     title: title.value,
-    schema: questions.value
+    fields: questions.value
   });
 }
 </script>

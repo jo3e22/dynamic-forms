@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
-import QuestionRenderer from '../components/QuestionRenderer.vue';
+import QuestionRenderer from '../../components/QuestionRenderer.vue';
 import { router } from '@inertiajs/vue3';
 
 function submitForm() {
