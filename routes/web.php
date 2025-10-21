@@ -19,13 +19,8 @@ Route::get('dashboard', function () {
 
 Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
 Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create');
-Route::get('/forms/{form}/edit', function (Form $form) {
-    return Inertia::render('forms/FormBuilder', [
-        'formId' => $form->id,
-        'questions' => $form->fields,
-        'mode' => 'edit'
-    ]);
-})->name('forms.edit');
+Route::get('/forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit');
+Route::put('/forms/{form}/edit', [FormController::class, 'update'])->name('forms.update');
 
 
 Route::post('/form/{id}/submit', function (Request $request, $id) {

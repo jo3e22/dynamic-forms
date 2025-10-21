@@ -1,43 +1,85 @@
-<script lang="ts" setup>
+<template>
+  <div class="max-w-4xl mx-auto py-10">
+    <h1 class="text-2xl font-bold mb-4">
+      {{ form.title ?? 'Untitled Form' }}
+    </h1>
+
+    <input v-model="form.title" placeholder="Form Title" class="mb-4 w-full border px-3 py-2" />
+    <textarea v-model="form.description" placeholder="Form Description" class="mb-4 w-full border px-3 py-2" />
+
+    <!-- Render fields -->
+    <div v-for="(field, index) in fields" :key="field.uuid" class="mb-4">
+      <input v-model="field.label" placeholder="Question label" class="w-full border px-3 py-2" />
+    </div>
+
+    <!-- Add field button -->
+    <button @click="addField" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+      Add Field
+    </button>
+
+    <!-- Save button -->
+    <button @click="saveForm" class="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      Save Form
+    </button>
+  </div>
+  <div v-if="showSuccess" class="success-message">
+    {{ page.props.flash.success }}
+  </div>
+</template>
+
+<script setup>
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import { watch } from 'vue';
 
-const title = ref('');
-const questions = ref([
-  { type: 'text', label: 'Question 1', required: false }
-]);
+const props = defineProps({
+  form: Object,
+  fields: Array
+});
 
-function addQuestion() {
-  questions.value.push({ type: 'text', label: '', required: false });
+const form = ref({ ...props.form });
+const fields = ref([...props.fields]);
+const page = usePage();
+const showSuccess = ref(false);
+
+watch(() => page.props.flash?.success, (message) => {
+  if (message) {
+    showSuccess.value = true;
+    setTimeout(() => showSuccess.value = false, 4000);
+  }
+});
+
+function addField() {
+  fields.value.push({
+    label: '',
+    type: 'text',
+    required: false,
+    uuid: crypto.randomUUID()
+  });
 }
 
 function saveForm() {
-  router.post('/forms', {
-    title: title.value,
-    fields: questions.value
-  });
+  try {
+    console.log('Save button clicked');
+    router.put(`/forms/${form.value.code}/edit`, {
+      title: form.value.title,
+      description: form.value.description,
+      fields: fields.value
+    }, {
+      onSuccess: () => {
+        console.log('Form updated!');
+        // Show toast here
+      },
+      onError: (errors) => {
+        console.error('Validation failed:', errors);
+      }
+    });
+  }
+  catch (error) {
+    console.error('An error occurred while saving the form:', error);
+  }
 }
+
+
 </script>
-
-<template>
-  <div>
-    <h1>Create a New Form</h1>
-    <input v-model="title" placeholder="Form title" />
-
-    <div v-for="(question, index) in questions" :key="index">
-      <input v-model="question.label" placeholder="Question label" />
-      <select v-model="question.type">
-        <option value="text">Text</option>
-        <option value="select">Select</option>
-        <option value="checkbox">Checkbox</option>
-      </select>
-      <label>
-        <input type="checkbox" v-model="question.required" />
-        Required
-      </label>
-    </div>
-
-    <button @click="addQuestion">Add Question</button>
-    <button @click="saveForm">Save Form</button>
-  </div>
-</template>
