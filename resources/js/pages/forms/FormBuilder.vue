@@ -1,29 +1,57 @@
 <template>
-  <div class="max-w-4xl mx-auto py-10">
-    <h1 class="text-2xl font-bold mb-4">
-      {{ form.title ?? 'Untitled Form' }}
-    </h1>
+  <div class="min-h-screen bg-gray-100">
+    <header class="bg-white shadow-md px-6 py-4 flex items-center justify-between">
+      <!-- Left: Back Arrow and Title -->
+      <div class="flex items-center gap-4">
+        <button class="text-gray-600 hover:text-gray-800">
+          ←
+        </button>
+        <h1 class="text-xl font-semibold text-gray-800">{{ form.title ?? 'Untitled Form' }}</h1>
+      </div>
 
-    <input v-model="form.title" placeholder="Form Title" class="mb-4 w-full border px-3 py-2" />
-    <textarea v-model="form.description" placeholder="Form Description" class="mb-4 w-full border px-3 py-2" />
+      <!-- Right: Buttons -->
+      <div class="flex items-center gap-3">
+        <button @click="saveForm" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Save</button>
+        <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Preview</button>
+        <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Share</button>
+        <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+      </div>
+    </header>
 
-    <!-- Render fields -->
-    <div v-for="(field, index) in fields" :key="field.uuid" class="mb-4">
-      <input v-model="field.label" placeholder="Question label" class="w-full border px-3 py-2" />
-    </div>
+    <main class="mx-auto w-[70%] mt-8 bg-black p-6 rounded shadow">
+      <!-- Title and Description -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700">Form Title</label>
+        <input v-model="form.title" placeholder="Form Title" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
 
-    <!-- Add field button -->
-    <button @click="addField" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-      Add Field
-    </button>
+        <label class="block mt-4 text-sm font-medium text-gray-700">Description</label>
+        <textarea v-model="form.description" placeholder="Form Description" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+      </div>
 
-    <!-- Save button -->
-    <button @click="saveForm" class="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-      Save Form
-    </button>
-  </div>
-  <div v-if="showSuccess" class="success-message">
-    {{ page.props.flash.success }}
+      <!-- Questions Section -->
+      <div class="space-y-4">
+        <FieldRenderer
+          v-for="(field, index) in fields"
+          :key="field.uuid"
+          :field="field"
+          :index="index"
+          :total="fields.length"
+          @copy=""
+          @delete="handleDelete"
+          @moveUp="moveFieldUp"
+          @moveDown="moveFieldDown"
+        />
+
+        <!-- Add field button -->
+        <button @click="addField" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+          Add Field
+        </button>
+
+      </div>
+      <div v-if="showSuccess" class="success-message">
+        {{ page.props.flash.success }}
+      </div>
+    </main>
   </div>
 </template>
 
@@ -32,6 +60,7 @@ import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import { watch } from 'vue';
+import FieldRenderer from '../../components/FieldRenderer.vue';
 
 const props = defineProps({
   form: Object,
@@ -55,9 +84,45 @@ function addField() {
     label: '',
     type: 'text',
     required: false,
+    field_order: fields.value.length + 1,
     uuid: crypto.randomUUID()
   });
 }
+
+function handleDelete(fieldToDelete) {
+  const index = fields.value.findIndex(f => f.uuid === fieldToDelete.uuid);
+  if (index !== -1) {
+    fields.value.splice(index, 1);
+  }
+}
+
+function moveFieldUp(field) {
+  const index = fields.value.findIndex(f => f.uuid === field.uuid);
+  if (index > 0) {
+    const temp = fields.value[index - 1];
+    fields.value[index - 1] = fields.value[index];
+    fields.value[index] = temp;
+    updateFieldOrder();
+  }
+}
+
+function moveFieldDown(field) {
+  const index = fields.value.findIndex(f => f.uuid === field.uuid);
+  if (index < fields.value.length - 1) {
+    const temp = fields.value[index + 1];
+    fields.value[index + 1] = fields.value[index];
+    fields.value[index] = temp;
+    updateFieldOrder();
+  }
+}
+
+function updateFieldOrder() {
+  fields.value.forEach((f, i) => {
+    f.field_order = i + 1;
+  });
+}
+
+
 
 function saveForm() {
   try {
