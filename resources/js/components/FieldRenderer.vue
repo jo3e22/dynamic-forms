@@ -16,6 +16,7 @@
           :disabled="index === total - 1"
           :class="[
             'transition',
+            props.index !== total-1 ? 'cursor-pointer' :
             index === total - 1
               ? 'text-gray-400 cursor-not-allowed'
               : 'text-gray-600 hover:text-gray-800'
@@ -30,6 +31,7 @@
           :disabled="props.index === 0"
           :class="[
             'hover:text-gray-800',
+            props.index !== 0 ? 'cursor-pointer' :
             props.index === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600'
           ]"
           aria-label="Move question up"
@@ -94,19 +96,19 @@ const props = defineProps({
 const emit = defineEmits(['copy', 'delete', 'moveUp', 'moveDown']);
 
 function copyField() {
-  emit('copy', props.field);
+  emit('copy', props.field, props.index);
 }
 
 function deleteField() {
-  emit('delete', props.field);
+  emit('delete', props.field, props.index);
 }
 
 function moveUp() {
-  emit('moveUp', props.field);
+  emit('moveUp', props.field, props.index);
 }
 
 function moveDown() {
-  emit('moveDown', props.field);
+  emit('moveDown', props.field, props.index);
 }
 </script>
   

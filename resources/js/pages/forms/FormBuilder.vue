@@ -32,11 +32,11 @@
       <div class="space-y-4">
         <FieldRenderer
           v-for="(field, index) in fields"
-          :key="field.uuid"
+          :key="field.id"
           :field="field"
           :index="index"
           :total="fields.length"
-          @copy=""
+          @copy="copyfield"
           @delete="handleDelete"
           @moveUp="moveFieldUp"
           @moveDown="moveFieldDown"
@@ -85,19 +85,46 @@ function addField() {
     type: 'text',
     required: false,
     field_order: fields.value.length + 1,
-    uuid: crypto.randomUUID()
   });
+
+  updateFieldOrder();
 }
 
-function handleDelete(fieldToDelete) {
-  const index = fields.value.findIndex(f => f.uuid === fieldToDelete.uuid);
+function copyfield(field, index) {
+  fields.value.push({
+    label: field.label,
+    type: field.type,
+    required: field.required,
+    field_order: 0,
+  })
+
+  const clone = fields.value[fields.value.length-1]
+  //const index = fields.value.findIndex(f => f.id === field.id);
+  var i = fields.value.length-1
+
+  while (i > index+1) {
+    fields.value[i] = fields.value[i-1];
+    i-=1
+  }  
+
+  fields.value[index+1] = clone
+
+  updateFieldOrder();
+  
+}
+
+function handleDelete(fieldToDelete, index) {
+  //const index = fields.value.findIndex(f => f.id === fieldToDelete.id);
   if (index !== -1) {
     fields.value.splice(index, 1);
   }
+
+  updateFieldOrder();
 }
 
-function moveFieldUp(field) {
-  const index = fields.value.findIndex(f => f.uuid === field.uuid);
+function moveFieldUp(field, index) {
+  //const index = fields.value.findIndex(f => f.id === field.id);
+  console.log(`id:${field.id} index:${index}, len:${fields.value.length}`)
   if (index > 0) {
     const temp = fields.value[index - 1];
     fields.value[index - 1] = fields.value[index];
@@ -106,12 +133,13 @@ function moveFieldUp(field) {
   }
 }
 
-function moveFieldDown(field) {
-  const index = fields.value.findIndex(f => f.uuid === field.uuid);
+function moveFieldDown(field, index) {
+  //const index = fields.value.findIndex(f => f.id === field.id);
   if (index < fields.value.length - 1) {
     const temp = fields.value[index + 1];
     fields.value[index + 1] = fields.value[index];
     fields.value[index] = temp;
+
     updateFieldOrder();
   }
 }
