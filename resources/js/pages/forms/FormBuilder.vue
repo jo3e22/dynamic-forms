@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="min-h-screen pb-8 bg-gray-100">
     <header class="bg-white shadow-md px-6 py-4 flex items-center justify-between">
       <!-- Left: Back Arrow and Title -->
       <div class="flex items-center gap-4">
@@ -18,7 +18,7 @@
       </div>
     </header>
 
-    <main class="mx-auto w-[70%] mt-8 bg-black p-6 rounded shadow">
+    <main class="mx-auto w-[70%] mt-8 bg-gray-400 p-6 rounded shadow">
       <!-- Title and Description -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700">Form Title</label>
@@ -86,8 +86,6 @@ function addField() {
     required: false,
     field_order: fields.value.length + 1,
   });
-
-  updateFieldOrder();
 }
 
 function copyfield(field, index) {
@@ -97,20 +95,14 @@ function copyfield(field, index) {
     required: field.required,
     field_order: 0,
   })
-
   const clone = fields.value[fields.value.length-1]
   //const index = fields.value.findIndex(f => f.id === field.id);
   var i = fields.value.length-1
-
   while (i > index+1) {
     fields.value[i] = fields.value[i-1];
     i-=1
-  }  
-
-  fields.value[index+1] = clone
-
-  updateFieldOrder();
-  
+  }
+  fields.value[index+1] = clone  
 }
 
 function handleDelete(fieldToDelete, index) {
@@ -118,18 +110,14 @@ function handleDelete(fieldToDelete, index) {
   if (index !== -1) {
     fields.value.splice(index, 1);
   }
-
-  updateFieldOrder();
 }
 
 function moveFieldUp(field, index) {
   //const index = fields.value.findIndex(f => f.id === field.id);
-  console.log(`id:${field.id} index:${index}, len:${fields.value.length}`)
   if (index > 0) {
     const temp = fields.value[index - 1];
     fields.value[index - 1] = fields.value[index];
     fields.value[index] = temp;
-    updateFieldOrder();
   }
 }
 
@@ -139,8 +127,6 @@ function moveFieldDown(field, index) {
     const temp = fields.value[index + 1];
     fields.value[index + 1] = fields.value[index];
     fields.value[index] = temp;
-
-    updateFieldOrder();
   }
 }
 
@@ -150,9 +136,8 @@ function updateFieldOrder() {
   });
 }
 
-
-
 function saveForm() {
+  updateFieldOrder()
   try {
     console.log('Save button clicked');
     router.put(`/forms/${form.value.code}/edit`, {

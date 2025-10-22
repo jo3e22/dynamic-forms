@@ -4,10 +4,10 @@
     <!-- Toolbar -->
     <div class="flex justify-end items-center">
       <div class="flex gap-2">
-        <button @click="copyField" aria-label="Copy question" class="text-gray-600 hover:text-blue-600">
+        <button @click="copyField" aria-label="Copy question" class="text-gray-600 hover:text-blue-600 cursor-pointer">
           <CopyIcon />
         </button>
-        <button @click="deleteField" aria-label="Delete question" class="text-gray-600 hover:text-red-600">
+        <button @click="deleteField" aria-label="Delete question" class="text-gray-600 hover:text-red-600 cursor-pointer">
           <DeleteIcon />
         </button>
 
@@ -50,7 +50,7 @@
     <div class="flex gap-4 items-start">
       <!-- Order Number -->
       <div class="pt-2 text-lg font-semibold text-gray-700 w-6 text-right">
-        {{ field.field_order }}.
+        {{ index +1 }}.
       </div>
 
       <!-- Question + Answer -->
@@ -59,14 +59,14 @@
         <input
           v-model="field.label"
           class="w-full border border-gray-300 rounded-md px-3 py-2"
-          :placeholder="field.label || 'Email'"
+          :placeholder="field.label || 'question'"
         />
 
         <!-- Answer Input -->
         <input
-          type="email"
+          type="text"
           disabled
-          placeholder="Email answer"
+          placeholder="Text answer"
           class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
         />
       </div>
@@ -75,7 +75,7 @@
     <!-- Options Section -->
     <div class="flex items-center gap-2">
       <label class="text-sm text-gray-600">Required</label>
-      <input type="checkbox" v-model="field.required" />
+      <input type="checkbox" v-model="field.required" class="cursor-pointer"/>
     </div>
   </div>
 </template>
