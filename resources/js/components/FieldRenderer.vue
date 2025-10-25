@@ -72,20 +72,29 @@
       </div>
     </div>
 
+    <hr class="my-5">
+
     <!-- Options Section -->
-    <div class="flex items-center gap-2">
-      <label class="text-sm text-gray-600">Required</label>
-      <input type="checkbox" v-model="field.required" class="cursor-pointer"/>
+    <div class="flex items-center justify-end gap-2">
+      <label class="inline-flex items-center cursor-pointer">
+        <input type="checkbox" v-model="field.required" class="sr-only peer">
+        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+        <span class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">Required</span>
+      </label>
     </div>
+
+    
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineProps, defineEmits } from 'vue';
 import CopyIcon from './icons/CopyIcon.vue';
 import DeleteIcon from './icons/DeleteIcon.vue';
 import ArrowDownIcon from './icons/ArrowDownIcon.vue';
 import ArrowUpIcon from './icons/ArrowUpIcon.vue';
+import TextQuestion from './questions/TextQuestion.vue';
+import SelectQuestion from './questions/SelectQuestion.vue';
 
 const props = defineProps({
   field: Object,
@@ -109,6 +118,13 @@ function moveUp() {
 
 function moveDown() {
   emit('moveDown', props.field, props.index);
+}
+function getComponent(type: string) {
+  const map: Record<string, string> = {
+    text: 'TextQuestion',
+    select: 'SelectQuestion'
+  };
+  return map[type] || 'TextQuestion';
 }
 </script>
   

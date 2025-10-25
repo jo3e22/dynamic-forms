@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen pb-8 bg-gray-100">
-    <header class="bg-white shadow-md px-6 py-4 flex items-center justify-between">
+  <div :style="{ backgroundColor: formColors.background }" class="min-h-screen pb-8">
+    <header :class="`bg-${formColors.secondary} shadow-md px-6 py-4 flex items-center justify-between`">
       <!-- Left: Back Arrow and Title -->
       <div class="flex items-center gap-4">
         <button class="text-gray-600 hover:text-gray-800">
@@ -60,6 +60,7 @@ import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import { watch } from 'vue';
+import { reactive } from 'vue';
 import FieldRenderer from '../../components/FieldRenderer.vue';
 
 const props = defineProps({
@@ -71,6 +72,16 @@ const form = ref({ ...props.form });
 const fields = ref([...props.fields]);
 const page = usePage();
 const showSuccess = ref(false);
+
+const formColors = reactive({
+  primary: 'rgb(99, 102, 241)', // purple-500
+  secondary: 'rgb(76, 81, 191)', // purple-600
+  background: 'rgb(30, 65, 123)', // blue-500
+  success: 'rgb(16, 185, 129)', // green-500
+  danger: 'rgb(239, 68, 68)', // red-500
+  warning: 'rgb(245, 158, 11)', // yellow-500
+  info: 'rgb(96, 165, 250)', // blue-300
+});
 
 watch(() => page.props.flash?.success, (message) => {
   if (message) {
