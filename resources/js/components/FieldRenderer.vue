@@ -1,89 +1,93 @@
 <!-- components/FieldEditor.vue -->
 <template>
-  <div class="border rounded bg-white shadow-sm p-4 space-y-4" :data-field-id="field.uuid">
-    <!-- Toolbar -->
-    <div class="flex justify-end items-center">
-      <div class="flex gap-2">
-        <button @click="copyField" aria-label="Copy question" class="text-gray-600 hover:text-blue-600 cursor-pointer">
-          <CopyIcon />
-        </button>
-        <button @click="deleteField" aria-label="Delete question" class="text-gray-600 hover:text-red-600 cursor-pointer">
-          <DeleteIcon />
-        </button>
+  <div :style="{backgroundColor: formColors.gray }" class=" rounded shadow-sm " :data-field-id="field.uuid">
+    <div :style="{ backgroundColor: formColors.primary }" class="h-2 w-full rounded-t-md"></div>
+    <div class="selectable p-4 space-y-4">
+      <!-- Toolbar -->
+      <div class="flex justify-end items-center">
+        <div class="flex gap-2">
+          <button @click="copyField" aria-label="Copy question" class="text-gray-600 hover:text-blue-600 cursor-pointer">
+            <CopyIcon />
+          </button>
+          <button @click="deleteField" aria-label="Delete question" class="text-gray-600 hover:text-red-600 cursor-pointer">
+            <DeleteIcon />
+          </button>
 
-        <button
-          @click="moveDown"
-          :disabled="index === total - 1"
-          :class="[
-            'transition',
-            props.index !== total-1 ? 'cursor-pointer' :
-            index === total - 1
-              ? 'text-gray-400 cursor-not-allowed'
-              : 'text-gray-600 hover:text-gray-800'
-          ]"
-          aria-label="Move question down"
-        >
-          <ArrowDownIcon />
-        </button>
+          <button
+            @click="moveDown"
+            :disabled="index === total - 1"
+            :class="[
+              'transition',
+              props.index !== total-1 ? 'cursor-pointer' :
+              index === total - 1
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-gray-600 hover:text-gray-800'
+            ]"
+            aria-label="Move question down"
+          >
+            <ArrowDownIcon :style="{ color: index === total - 1 ? '#9CA3AF' : '#000000' }" />
+          </button>
 
-        <button
-          @click="moveUp"
-          :disabled="props.index === 0"
-          :class="[
-            'hover:text-gray-800',
-            props.index !== 0 ? 'cursor-pointer' :
-            props.index === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600'
-          ]"
-          aria-label="Move question up"
-        >
-          <ArrowUpIcon />
-        </button>
+          <button
+            @click="moveUp"
+            :disabled="props.index === 0"
+            :class="[
+              'hover:text-gray-800',
+              props.index !== 0 ? 'cursor-pointer' :
+              props.index === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600'
+            ]"
+            aria-label="Move question up"
+          >
+            <ArrowUpIcon :style="{ color: index === 0 ? '#9CA3AF' : '#000000' }" />
+          </button>
+        </div>
+
+        <div class="flex gap-2">
+          <button class="text-gray-500 hover:text-gray-700"><i class="fa fa-arrows-alt"></i></button>
+          <button class="text-gray-500 hover:text-gray-700"><i class="fa fa-copy"></i></button>
+          <button class="text-gray-500 hover:text-gray-700"><i class="fa fa-cog"></i></button>
+        </div>
       </div>
-      
-      <div class="flex gap-2">
-        <button class="text-gray-500 hover:text-gray-700"><i class="fa fa-arrows-alt"></i></button>
-        <button class="text-gray-500 hover:text-gray-700"><i class="fa fa-copy"></i></button>
-        <button class="text-gray-500 hover:text-gray-700"><i class="fa fa-cog"></i></button>
+
+      <div class="flex gap-4 items-start">
+        <!-- Order Number -->
+        <div class="pt-2 text-lg font-semibold text-gray-700 w-6 text-right">
+          {{ index +1 }}.
+        </div>
+
+        <!-- Question + Answer -->
+        <div class="flex-1 space-y-3">
+          <!-- Question Label -->
+          <input
+            v-model="field.label"
+            :style="{backgroundColor: formColors.white }"
+            class="w-full border border-gray-300 rounded-md px-3 py-2"
+            :placeholder="field.label || 'question'"
+          />
+
+          <!-- Answer Input -->
+          <input
+            type="text"
+            disabled
+            placeholder="Text answer"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
+          />
+        </div>
       </div>
+
+      <hr class="my-5">
+
+      <!-- Options Section -->
+      <div class="flex items-center justify-end gap-2">
+        <label class="inline-flex items-center cursor-pointer">
+          <input type="checkbox" v-model="field.required" class="sr-only peer">
+          <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
+          <span class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">Required</span>
+        </label>
+      </div>
+
+
     </div>
-
-    <div class="flex gap-4 items-start">
-      <!-- Order Number -->
-      <div class="pt-2 text-lg font-semibold text-gray-700 w-6 text-right">
-        {{ index +1 }}.
-      </div>
-
-      <!-- Question + Answer -->
-      <div class="flex-1 space-y-3">
-        <!-- Question Label -->
-        <input
-          v-model="field.label"
-          class="w-full border border-gray-300 rounded-md px-3 py-2"
-          :placeholder="field.label || 'question'"
-        />
-
-        <!-- Answer Input -->
-        <input
-          type="text"
-          disabled
-          placeholder="Text answer"
-          class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
-        />
-      </div>
-    </div>
-
-    <hr class="my-5">
-
-    <!-- Options Section -->
-    <div class="flex items-center justify-end gap-2">
-      <label class="inline-flex items-center cursor-pointer">
-        <input type="checkbox" v-model="field.required" class="sr-only peer">
-        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 dark:peer-checked:bg-blue-600"></div>
-        <span class="ms-3 text-sm font-medium text-gray-600 dark:text-gray-300">Required</span>
-      </label>
-    </div>
-
-    
   </div>
 </template>
 
@@ -99,7 +103,8 @@ import SelectQuestion from './questions/SelectQuestion.vue';
 const props = defineProps({
   field: Object,
   index: Number,
-  total: Number
+  total: Number,
+  formColors: Object
 });
 
 const emit = defineEmits(['copy', 'delete', 'moveUp', 'moveDown']);

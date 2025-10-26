@@ -1,6 +1,9 @@
 <template>
   <div :style="{ backgroundColor: formColors.background }" class="min-h-screen pb-8">
-    <header :class="`bg-${formColors.secondary} shadow-md px-6 py-4 flex items-center justify-between`">
+
+  <!--:style="{ backgroundColor: formColors.background }"-->
+
+    <header :style="{ backgroundColor: formColors.white }" class="shadow-md px-6 py-4 flex items-center justify-between sticky top-0 z-10">
       <!-- Left: Back Arrow and Title -->
       <div class="flex items-center gap-4">
         <button class="text-gray-600 hover:text-gray-800">
@@ -18,29 +21,63 @@
       </div>
     </header>
 
-    <main class="mx-auto w-[70%] mt-8 bg-gray-400 p-6 rounded shadow">
+    <main :style="{ backgroundColor: formColors.white }" class="mx-auto w-[70%] mt-8 p-6 rounded shadow">
       <!-- Title and Description -->
-      <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700">Form Title</label>
-        <input v-model="form.title" placeholder="Form Title" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+      <div :style="{ backgroundColor: formColors.white }" class="mb-6 p-4 space-y-4 rounded-md">
+          <input
+            v-model="form.title"
+            placeholder="Form Title"
+            class="mt-2 block w-full text-4xl border-b-1 focus:border-b-2 focus:outline-none"
+            :style="{
+              '--tw-border-opacity': '1',
+              borderColor: 'transparent',
+            }"
+            @focus="(e) => e.target.style.borderColor = formColors.primary"
+            @blur="(e) => e.target.style.borderColor = formColors.gray"
+          />
 
-        <label class="block mt-4 text-sm font-medium text-gray-700">Description</label>
-        <textarea v-model="form.description" placeholder="Form Description" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
+          <textarea
+            v-model="form.description"
+            id="descriptionTextarea"
+            placeholder="Form Description"
+            class="mt-1 block w-full border-b-1 focus:border-b-2 focus:outline-none resize-none overflow-hidden"
+            :style="{
+              '--tw-border-opacity': '1',
+              borderColor: 'transparent',
+            }"
+            @focus="(e) => e.target.style.borderColor = formColors.primary"
+            @blur="(e) => e.target.style.borderColor = formColors.gray"
+            @input="adjustTextareaHeight"
+          />
       </div>
 
       <!-- Questions Section -->
       <div class="space-y-4">
-        <FieldRenderer
-          v-for="(field, index) in fields"
-          :key="field.id"
-          :field="field"
-          :index="index"
-          :total="fields.length"
-          @copy="copyfield"
-          @delete="handleDelete"
-          @moveUp="moveFieldUp"
-          @moveDown="moveFieldDown"
-        />
+        <div v-for="(field, index) in fields"
+        :key="index"
+        @click="handleFocus(index)"
+        tabindex="0"
+        >
+          <FieldRenderer
+            v-if="selectedQuestionId === index"
+            :field="field"
+            :index="index"
+            :total="fields.length"
+            :formColors="formColors"
+            @copy="copyfield"
+            @delete="handleDelete"
+            @moveUp="moveFieldUp"
+            @moveDown="moveFieldDown"
+          />
+
+          <QuestionRenderer
+            v-else
+            :field="field"
+            :index="index"
+            @click="handleFocus(index)"
+          />
+
+        </div>
 
         <!-- Add field button -->
         <button @click="addField" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
@@ -56,12 +93,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, reactive, onMounted, onBeforeUnmount } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
-import { watch } from 'vue';
-import { reactive } from 'vue';
 import FieldRenderer from '../../components/FieldRenderer.vue';
+import QuestionRenderer from '@/components/QuestionRenderer.vue';
 
 const props = defineProps({
   form: Object,
@@ -74,20 +110,48 @@ const page = usePage();
 const showSuccess = ref(false);
 
 const formColors = reactive({
-  primary: 'rgb(99, 102, 241)', // purple-500
-  secondary: 'rgb(76, 81, 191)', // purple-600
-  background: 'rgb(30, 65, 123)', // blue-500
+  primary: 'rgb(120, 110, 127)', // purple-500
+  secondary: 'rgb(255, 255, 255)', // purple-600
+  background: 'rgb(240, 220, 255)', // blue-500
+  white: 'rgb(255, 255, 255)', // white
+  gray: 'rgb(243, 244, 246)', // gray-100
   success: 'rgb(16, 185, 129)', // green-500
   danger: 'rgb(239, 68, 68)', // red-500
   warning: 'rgb(245, 158, 11)', // yellow-500
   info: 'rgb(96, 165, 250)', // blue-300
 });
 
+//console.log(`${fields.value[1].type}`)
+
 watch(() => page.props.flash?.success, (message) => {
   if (message) {
     showSuccess.value = true;
     setTimeout(() => showSuccess.value = false, 4000);
   }
+});
+
+const selectedQuestionId = ref(null);
+
+function handleFocus(questionId) {
+  selectedQuestionId.value = questionId;
+}
+
+function handleClickOutside(event) {
+  // Check if the click is outside the currently selected question
+  const clickedInside = event.target.closest('.p-4'); // Adjust the selector to match your question container
+  if (!clickedInside) {
+    selectedQuestionId.value = null; // Clear the focus
+  }
+}
+
+// Add a global click listener to detect clicks outside the component
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+// Remove the global click listener when the component is destroyed
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 
 function addField() {
@@ -170,5 +234,25 @@ function saveForm() {
   }
 }
 
+
+
+
+
+const descriptionTextarea = ref(null);
+
+function adjustTextareaHeight() {
+  const textarea = document.getElementById('descriptionTextarea'); // Access the textarea using its id
+  if (textarea) {
+    textarea.style.height = 'auto'; // Reset height to auto to calculate the new height
+    textarea.offsetHeight; // This line forces the browser to recalculate layout
+    textarea.style.height = `${textarea.scrollHeight}px`; // Set the height to match the content
+    console.log('Adjusted height:', textarea.style.height); // Debugging log
+  }
+}
+
+// Adjust height on mount
+onMounted(() => {
+  adjustTextareaHeight();
+});
 
 </script>

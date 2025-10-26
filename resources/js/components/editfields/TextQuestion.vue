@@ -11,7 +11,15 @@
         type="text"
         v-model="question.label"
       />
-      <span v-else>{{ localValue }}</span>
+      <div v-else>
+            <!-- Answer Input -->
+            <input
+              type="text"
+              disabled
+              placeholder="Text answer"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
+            />
+      </div> 
     </div>
   </template>
   
@@ -22,6 +30,7 @@
     name: 'TextQuestion',
     props: {
       question: Object,
+      index: Number,
       mode: String,
       modelValue: String
     },
