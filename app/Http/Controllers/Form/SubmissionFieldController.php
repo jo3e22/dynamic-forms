@@ -23,7 +23,7 @@ class SubmissionFieldController extends Controller
 
         $submissionField = new SubmissionField();
         $submissionField->field()->associate($field);
-        $submission->answers()->save($submissionField);
+        $submission->submissionFields()->save($submissionField);
 
         \Log::info('create method finished', $submissionField->toArray());
         return $submission;

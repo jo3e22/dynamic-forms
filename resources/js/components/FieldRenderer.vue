@@ -66,11 +66,11 @@
           />
 
           <!-- Answer Input -->
-          <input
-            type="text"
-            disabled
-            placeholder="Text answer"
-            class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100"
+          <component
+            :is="getComponent(field.type)"
+            :field="field"
+            :submissionField="submissionField"
+            :mode="'edit'"
           />
         </div>
       </div>
@@ -92,20 +92,24 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, computed } from 'vue';
 import CopyIcon from './icons/CopyIcon.vue';
 import DeleteIcon from './icons/DeleteIcon.vue';
 import ArrowDownIcon from './icons/ArrowDownIcon.vue';
 import ArrowUpIcon from './icons/ArrowUpIcon.vue';
-import TextQuestion from './questions/TextQuestion.vue';
-import SelectQuestion from './questions/SelectQuestion.vue';
+import TextQuestion from './questions/TextInput.vue';
+import TextareaQuestion from './questions/TextareaInput.vue';
+import MultipleChoiceQuestion from './editfields/MultipleChoiceQuestion.vue';
 
 const props = defineProps({
   field: Object,
   index: Number,
+  submissionField: Object,
   total: Number,
   formColors: Object
 });
+
+console.log('field type:', props.field.type);
 
 const emit = defineEmits(['copy', 'delete', 'moveUp', 'moveDown']);
 
@@ -124,12 +128,15 @@ function moveUp() {
 function moveDown() {
   emit('moveDown', props.field, props.index);
 }
-function getComponent(type: string) {
-  const map: Record<string, string> = {
-    text: 'TextQuestion',
-    select: 'SelectQuestion'
-  };
-  return map[type] || 'TextQuestion';
-}
+
+// Map field types to components
+const componentMap = {
+  text: TextQuestion,
+  textarea: TextareaQuestion,
+  multiplechoice: MultipleChoiceQuestion,
+  // Add more mappings for other field types
+};
+
+const getComponent = (type) => componentMap[type] || null;
 </script>
   

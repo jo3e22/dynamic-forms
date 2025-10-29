@@ -62,6 +62,7 @@
             v-if="selectedQuestionId === index"
             :field="field"
             :index="index"
+            :submissionField="getFakeSubmissionField(field)"
             :total="fields.length"
             :formColors="formColors"
             @copy="copyfield"
@@ -74,16 +75,37 @@
             v-else
             :field="field"
             :index="index"
+            :submissionField="getFakeSubmissionField(field)"
             :mode="'preview'"
             @click="handleFocus(index)"
           />
 
         </div>
 
-        <!-- Add field button -->
-        <button @click="addField" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-          Add Field
-        </button>
+        <div>
+          <!-- Toggle Button -->
+          <button id="toggle-buttons" @click="toggleButtons" class="toggle-button">
+            <span id="toggle-icon">{{ toggleIcon }}</span>
+          </button>
+
+          <!-- Buttons Container -->
+          <div
+            id="buttons-container"
+            v-show="buttonsVisible"
+            class="grid grid-cols-3 gap-4 mt-4"
+          >
+            <button @click="addField_text" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+              Short text
+            </button>
+            <button @click="addField_textlong" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              Long text
+            </button>
+            <button @click="addField_multiplechoice" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+              Multiple choice
+            </button>
+          </div>
+        </div>
+
 
       </div>
       <div v-if="showSuccess" class="success-message">
@@ -155,10 +177,45 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-function addField() {
+const getFakeSubmissionField = (field) => {
+  return {
+    id: null, // No real ID
+    form_field_id: field.id,
+    submission_id: null,
+    answer: '', // Default empty answer
+  };
+};
+
+const buttonsVisible = ref(false);
+const toggleIcon = ref('+');
+
+function toggleButtons() {
+  buttonsVisible.value = !buttonsVisible.value;
+  toggleIcon.value = buttonsVisible.value ? '×' : '+';
+}
+
+function addField_text() {
   fields.value.push({
     label: '',
     type: 'text',
+    required: false,
+    field_order: fields.value.length + 1,
+  });
+}
+
+function addField_textlong() {
+  fields.value.push({
+    label: '',
+    type: 'textarea',
+    required: false,
+    field_order: fields.value.length + 1,
+  });
+}
+
+function addField_multiplechoice() {
+  fields.value.push({
+    label: '',
+    type: 'multiplechoice',
     required: false,
     field_order: fields.value.length + 1,
   });

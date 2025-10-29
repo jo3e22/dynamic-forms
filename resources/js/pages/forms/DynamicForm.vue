@@ -74,6 +74,8 @@ const fields = ref([...props.fields]);
 const submission = ref({ ...props.submission });
 const submissionFields = ref([...props.submissionFields]);
 
+fields.value[0].type = 'textarea';
+
 console.log('Fields:', fields.value);
 console.log('submissionFields:', submissionFields.value);
 
