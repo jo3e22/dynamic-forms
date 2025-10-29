@@ -1,7 +1,7 @@
 <!-- components/FieldEditor.vue -->
 <template>
-  <div :style="{backgroundColor: formColors.gray }" class=" rounded shadow-sm " :data-field-id="field.uuid">
-    <div :style="{ backgroundColor: formColors.primary }" class="h-2 w-full rounded-t-md"></div>
+  <div :style="{backgroundColor: formColors.white }" class=" rounded shadow-lg relative " :data-field-id="field.uuid">
+    <div :style="{ backgroundColor: formColors.primary }" class="absolute h-full w-2 rounded-l-md"></div>
     <div class="selectable p-4 space-y-4">
       <!-- Toolbar -->
       <div class="flex justify-end items-center">

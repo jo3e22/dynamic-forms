@@ -21,9 +21,11 @@
       </div>
     </header>
 
-    <main :style="{ backgroundColor: formColors.white }" class="mx-auto w-[70%] mt-8 p-6 rounded shadow">
+    <main class="mx-auto w-[70%] mt-8 p-6">
       <!-- Title and Description -->
-      <div :style="{ backgroundColor: formColors.white }" class="mb-6 p-4 space-y-4 rounded-md">
+      <div :style="{ backgroundColor: formColors.white }" class="mb-6 rounded-md">
+        <div :style="{ backgroundColor: formColors.primary }" class="h-2 w-full rounded-t-md"></div>
+        <div class="p-4 space-y-4">
           <input
             v-model="form.title"
             placeholder="Form Title"
@@ -49,6 +51,7 @@
             @blur="(e) => e.target.style.borderColor = formColors.gray"
             @input="adjustTextareaHeight"
           />
+        </div>
       </div>
 
       <!-- Questions Section -->
@@ -77,6 +80,7 @@
             :index="index"
             :submissionField="getFakeSubmissionField(field)"
             :mode="'preview'"
+            :form-colors="formColors"
             @click="handleFocus(index)"
           />
 

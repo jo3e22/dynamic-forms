@@ -1,9 +1,11 @@
 <template>
   <div :style="{ backgroundColor: formColors.background }" class="min-h-screen py-8">
 
-    <main :style="{ backgroundColor: formColors.white }" class="mx-auto w-[70%] p-6 rounded shadow">
+    <main class="mx-auto w-[70%] p-6 ">
       <!-- Title and Description -->
-      <div :style="{ backgroundColor: formColors.white }" class="mb-6 p-4 space-y-4 rounded-md">
+      <div :style="{ backgroundColor: formColors.white }" class="mb-6 rounded-md shadow-sm">
+        <div :style="{ backgroundColor: formColors.primary }" class="h-2 w-full rounded-t-md"></div>
+        <div class="p-4 space-y-4">
           <div
             placeholder="Form Title"
             class="mt-2 block w-full text-4xl border-b-1 focus:border-b-2 focus:outline-none"
@@ -27,6 +29,7 @@
           >
             {{ form.description }}
           </div>
+        </div>
       </div>
 
       <!-- Questions Section -->
@@ -39,6 +42,7 @@
             :index="index"
             :submissionField="submissionFields[index]"
             :mode="'view'"
+            :form-colors="formColors"
           />
 
         </div>

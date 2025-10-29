@@ -1,5 +1,8 @@
 <template>
-  <div class="selectable p-4 space-y-4" :data-field-id="field.uuid">
+  <div 
+    class="selectable p-4 space-y-4" :data-field-id="field.uuid"
+    :style="{ backgroundColor: formColors.white }"
+  >
 
     <div class="flex-col gap-1 space-y-3">
       <div class="flex gap-1 items-start">
@@ -43,7 +46,8 @@ const props = defineProps({
   field: Object,
   index: Number,
   submissionField: Object,
-  mode: String
+  mode: String,
+  formColors: Object
 });
 
 // Map field types to components
