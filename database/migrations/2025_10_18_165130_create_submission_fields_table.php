@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('submission_fields', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('form_field_id');
-            $table->unsignedBigInteger('form_submission_id');
+            $table->unsignedBigInteger('submission_id');
             $table->json('answer')->nullable();
             $table->softDeletes();
             $table->timestamps();
@@ -22,7 +22,7 @@ return new class extends Migration
 
         Schema::table('submission_fields', function (Blueprint $table) {
             $table->foreign('form_field_id')->references('id')->on('form_fields')->onDelete('cascade');
-            $table->foreign('form_submission_id')->references('id')->on('form_submissions')->onDelete('cascade');
+            $table->foreign('submission_id')->references('id')->on('submissions')->onDelete('cascade');
         });
     }
 

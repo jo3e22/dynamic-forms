@@ -6,17 +6,20 @@ use Auth;
 use Inertia\Inertia;
 use App\Models\Form;
 use App\Models\FormField;
+use App\Models\Submission;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Form\SubmissionController;
+use App\Http\Controllers\Form\SubmissionFieldController;
 use Inertia\Response;
 
 class FormController extends Controller
 {
     public function index()
     {
-        $forms = Form::select('id', 'title', 'status')->latest()->get();
+        $forms = Form::select('id', 'title', 'status', 'code')->latest()->get();
 
         return Inertia::render('forms/Index', [
             'forms' => $forms
@@ -40,6 +43,53 @@ class FormController extends Controller
         return Inertia::render('forms/FormBuilder', [
             'form' => $form,
             'fields' => $form->fields
+        ]);
+    }
+
+    public function viewform(Form $form)
+    {
+        // if $form->requires_user is true, ensure user and check for previous submission.
+        $current_user = Auth::user();
+
+        // Check if user has any submissions for this form
+        $submission = $current_user->submissions()->where('form_id', $form->id)->first();
+
+        if (!$submission) {
+            $submission_controller = new SubmissionController();
+            $submission = $submission_controller->create($form);
+            \Log::info('submission created', $submission->toArray());
+        }
+        else {
+            \Log::info('submission fetched', $submission->toArray());
+        }
+
+        foreach ($form->fields as $field) {
+            $submissionField = $submission->submissionFields()->where('form_field_id', $field->id)->first();
+            if (!$submissionField) {
+                $submission_field_controller = new SubmissionFieldController();
+                $submissionField = $submission_field_controller->create($field, $submission);
+                \Log::info('submission field created', $submissionField->toArray());
+            }
+            else {
+                \Log::info('submission field fetched', $submissionField->toArray());
+            }
+        }
+
+        return Inertia::render('forms/DynamicForm', [
+            'form' => $form,
+            'fields' => $form->fields,
+            'submission' => $submission,
+            'submissionFields' => $submission->submissionFields
+        ]);
+    }
+
+    public function viewformsubmission(Form $form, Submission $submission)
+    {
+        return Inertia::render('forms/DynamicForm', [
+            'form' => $form,
+            'fields' => $form->fields,
+            'submission' => $submission,
+            'submissionFields' => $submission->submissionFields
         ]);
     }
 

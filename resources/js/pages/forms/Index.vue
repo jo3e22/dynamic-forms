@@ -19,6 +19,11 @@
           <tr v-for="form in forms" :key="form.id">
             <td class="border px-4 py-2">{{ form.title }}</td>
             <td class="border px-4 py-2">{{ form.status }}</td>
+            <td class="border px-4 py-2">
+              <a :href="`/forms/${form.code}/edit`" class="text-blue-600 hover:underline">
+                Edit
+              </a>
+            </td>
           </tr>
         </tbody>
       </table>

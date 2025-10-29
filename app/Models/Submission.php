@@ -7,11 +7,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
 
-class FormSubmissions extends Model
+class Submission extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'form_id', 'user_id', 'status', 'email'];
+    const STATUS_DRAFT = 'draft';
+    const STATUS_PENDING = 'pending';
+    const STATUS_OPEN = 'open';
+    const STATUS_CLOSED = 'closed';
+
+    protected $fillable = [
+        'code',
+        'form_id',
+        'user_id',
+        'status',
+        'email'
+    ];
 
     public function getRouteKeyName()
     {
@@ -32,9 +43,9 @@ class FormSubmissions extends Model
         return $this->belongsTo(Form::class);
     }
 
-    public function answers()
+    public function submissionFields()
     {
-        return $this->hasMany(QuestionAnswer::class);
+        return $this->hasMany(SubmissionField::class);
     }
 
     public function user()

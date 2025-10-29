@@ -74,6 +74,7 @@
             v-else
             :field="field"
             :index="index"
+            :mode="'preview'"
             @click="handleFocus(index)"
           />
 
