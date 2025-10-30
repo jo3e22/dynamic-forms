@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-6 rounded-md bg-white">
+    <div class="mb-6 rounded-md shadow bg-white">
         <div :style="{ backgroundColor: form.primary_color }" class="h-3 w-full rounded-t-md"></div>
 
         <div class="p-6 space-y-4">

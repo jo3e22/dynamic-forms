@@ -55,7 +55,7 @@
             @keydown.enter.stop.prevent="select(`field:${field.id ?? fIdx}`)"
           >
 
-            <div class=" bg-white rounded shadow-lg relative " :data-field-id="field.uuid">
+            <div class=" bg-white rounded shadow relative " :data-field-id="field.uuid">
               <div
                 v-if="isSelected(fieldKey(field, fIdx))"
                 class="bg-green-500 absolute h-full w-2 rounded-l-md">
@@ -103,9 +103,29 @@
 
           </div>
 
-          <button @click="addField_text" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-            Short text
-          </button>
+          <div>
+            
+            <button id="toggle-buttons" @click="toggleButtons" class="toggle-button">
+              <span id="toggle-icon">{{ toggleIcon }}</span>
+            </button>
+
+            
+            <div
+              id="buttons-container"
+              v-show="buttonsVisible"
+              class="grid grid-cols-3 gap-4 mt-4"
+            >
+              <button @click="addField_text" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                Short text
+              </button>
+              <button @click="addField_textlong" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Long text
+              </button>
+              <button @click="addField_multiplechoice" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                Multiple choice
+              </button>
+            </div>
+          </div>
 
         </div>
 
