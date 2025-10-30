@@ -37,7 +37,7 @@
 </template>
   
 <script lang="ts" setup>
-import { defineProps, defineEmits, computed } from 'vue';
+import { defineProps } from 'vue';
 import TextInput from './questions/TextInput.vue';
 import TextareaInput from './questions/TextareaInput.vue';
 import MultipleChoiceInput from './questions/MultipleChoiceInput.vue';

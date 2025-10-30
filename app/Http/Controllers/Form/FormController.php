@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Form;
 use Auth;
 use Inertia\Inertia;
 use App\Models\Form;
+use App\Models\FormSection;
 use App\Models\FormField;
 use App\Models\Submission;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Form\FormSectionController;
 use App\Http\Controllers\Form\SubmissionController;
 use App\Http\Controllers\Form\SubmissionFieldController;
 use Inertia\Response;
@@ -19,10 +21,17 @@ class FormController extends Controller
 {
     public function index()
     {
-        $forms = Form::select('id', 'title', 'status', 'code')->latest()->get();
+        $forms = Form::with(['sections' => fn($q) => $q->orderBy('section_order')])
+        ->latest()
+        ->get(['id','status','code']);
 
         return Inertia::render('forms/Index', [
-            'forms' => $forms
+            'forms' => $forms->map(fn($f) => [
+                'id' => $f->id,
+                'code' => $f->code,
+                'status' => $f->status,
+                'title' => $f->title, // accessor applied
+            ]),
         ]);
     }
 
@@ -35,6 +44,8 @@ class FormController extends Controller
         $form->status = Form::STATUS_DRAFT;
         $current_user->forms()->save($form);
 
+        app(FormSectionController::class)->create($form);
+
         return redirect()->route('forms.edit', $form);
     }
 
@@ -42,6 +53,7 @@ class FormController extends Controller
     {
         return Inertia::render('forms/FormBuilder', [
             'form' => $form,
+            'sections' => $form->sections,
             'fields' => $form->fields
         ]);
     }

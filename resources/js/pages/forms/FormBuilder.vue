@@ -14,6 +14,7 @@
 
       <!-- Right: Buttons -->
       <div class="flex items-center gap-3">
+        <button @click="tempPrint" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">Temp Print</button>
         <button @click="saveForm" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Save</button>
         <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Preview</button>
         <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Share</button>
@@ -21,10 +22,97 @@
       </div>
     </header>
 
-    <main class="mx-auto w-[70%] mt-8 p-6">
+    <main class="mx-auto w-[70%] mt-8">
       <!-- Title and Description -->
-      <div :style="{ backgroundColor: formColors.white }" class="mb-6 rounded-md">
-        <div :style="{ backgroundColor: formColors.primary }" class="h-2 w-full rounded-t-md"></div>
+      <div v-for="(section, sIdx) in sections" :key="section.id">
+
+
+        <div
+          class="selectable"
+          :data-select-key="`section:${section.id}`"
+          :class="isSelected(`section:${section.id ?? sIdx}`) ? 'shadow-lg' : ''"
+          @click.stop="select(`section:${section.id}`)"
+          tabindex="0"
+          @keydown.enter.stop.prevent="select(`section:${section.id}`)"
+        >
+          <TitleSec
+            :form="form"
+            :section="section"
+            :index="sIdx"
+            :selected="isSelected(`section:${section.id}`)"
+          />
+        </div>
+
+        <div class="space-y-4">
+          <div v-for="(field, fIdx) in fields"
+            class="selectable"
+            :key="field.id ?? fIdx"
+            :data-field-id="field.uuid"
+            :data-select-key="`field:${field.id ?? fIdx}`"
+            :class="isSelected(`field:${field.id ?? fIdx}`) ? 'shadow-lg' : ''"
+            @click.stop="select(`field:${field.id ?? fIdx}`)"
+            tabindex="0"
+            @keydown.enter.stop.prevent="select(`field:${field.id ?? fIdx}`)"
+          >
+
+            <div class=" bg-white rounded shadow-lg relative " :data-field-id="field.uuid">
+              <div
+                v-if="isSelected(fieldKey(field, fIdx))"
+                class="bg-green-500 absolute h-full w-2 rounded-l-md">
+              </div>
+              <div class="p-4 space-y-4">
+                <Toolbar
+                  v-if="isSelected(fieldKey(field, fIdx))"
+                  :field="field"
+                  :index="fIdx"
+                  :total="fields.length"
+                  @copy="copyfield"
+                  @delete="handleDelete"
+                  @moveUp="moveFieldUp"
+                  @moveDown="moveFieldDown"
+                />
+
+                <!-- Question + Answer -->
+                <div class="flex-1 space-y-3">
+                  <!-- Question Label -->
+                  <input
+                    v-model="field.label"
+                    :style="{backgroundColor: formColors.white }"
+                    class="w-full px-3 py-2"
+                    :class="'focus:outline-none focus:border-b-2 focus:border-blue-500'"
+                    :placeholder="field.label || 'question'"
+                  />
+
+                  <!-- Answer Input -->
+                  <component
+                    :is="getComponent(field.type)"
+                    :field="field"
+                    :submissionField="getFakeSubmissionField(field)"
+                    :mode="'edit'"
+                  />
+                </div>
+
+                <Optionsbar
+                  v-if="isSelected(fieldKey(field, fIdx))"
+                  :field="field"
+                  :index="fIdx"
+                  :total="fields.length"
+                />
+              </div>
+            </div>
+
+          </div>
+
+          <button @click="addField_text" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Short text
+          </button>
+
+        </div>
+
+
+      </div>
+
+        <!--
         <div class="p-4 space-y-4">
           <input
             v-model="form.title"
@@ -52,9 +140,11 @@
             @input="adjustTextareaHeight"
           />
         </div>
-      </div>
+        -->
 
       <!-- Questions Section -->
+
+      <!--
       <div class="space-y-4">
         <div v-for="(field, index) in fields"
         :key="index"
@@ -87,12 +177,12 @@
         </div>
 
         <div>
-          <!-- Toggle Button -->
+          
           <button id="toggle-buttons" @click="toggleButtons" class="toggle-button">
             <span id="toggle-icon">{{ toggleIcon }}</span>
           </button>
 
-          <!-- Buttons Container -->
+          
           <div
             id="buttons-container"
             v-show="buttonsVisible"
@@ -112,6 +202,7 @@
 
 
       </div>
+      -->
       <div v-if="showSuccess" class="success-message">
         {{ page.props.flash.success }}
       </div>
@@ -119,22 +210,33 @@
   </div>
 </template>
 
-<script setup>
+<script lang=ts setup>
 import { ref, watch, reactive, onMounted, onBeforeUnmount } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
+import TitleSec from '../../components/editfields/TitleSec.vue';
+import Toolbar from '../../components/editfields/Toolbar.vue';
+import Optionsbar from '../../components/editfields/Optionsbar.vue';
 import FieldRenderer from '../../components/FieldRenderer.vue';
 import QuestionRenderer from '@/components/QuestionRenderer.vue';
+import TextQuestion from '../../components/questions/TextInput.vue';
+import TextareaQuestion from '../../components/questions/TextareaInput.vue';
+import MultipleChoiceQuestion from '../../components/editfields/MultipleChoiceQuestion.vue';
 
 const props = defineProps({
   form: Object,
+  sections: Array,
   fields: Array
 });
 
 const form = ref({ ...props.form });
+const sections = ref([...props.sections]);
 const fields = ref([...props.fields]);
 const page = usePage();
 const showSuccess = ref(false);
+
+form.value.primary_color = form.value.primary_color || 'rgb(120, 110, 127)'; // default purple-500
+form.value.secondary_color = form.value.secondary_color || 'rgb(255, 255, 255)'; // default purple-600
 
 const formColors = reactive({
   primary: 'rgb(120, 110, 127)', // purple-500
@@ -147,6 +249,16 @@ const formColors = reactive({
   warning: 'rgb(245, 158, 11)', // yellow-500
   info: 'rgb(96, 165, 250)', // blue-300
 });
+
+
+const selectedKey = ref<string | null>(null);
+const select = (key: string) => { selectedKey.value = key; };
+const isSelected = (key: string) => selectedKey.value === key;
+const fieldKey = (field, idx) => `field:${field.id ?? idx}`;
+const sectionKey = (section) => `section:${section.id}`;
+
+
+
 
 //console.log(`${fields.value[1].type}`)
 
@@ -273,6 +385,16 @@ function updateFieldOrder() {
   });
 }
 
+// Map field types to components
+const componentMap = {
+  text: TextQuestion,
+  textarea: TextareaQuestion,
+  multiplechoice: MultipleChoiceQuestion,
+  // Add more mappings for other field types
+};
+
+const getComponent = (type) => componentMap[type] || null;
+
 function saveForm() {
   updateFieldOrder()
   try {
@@ -296,25 +418,13 @@ function saveForm() {
   }
 }
 
-
-
-
-
-const descriptionTextarea = ref(null);
-
-function adjustTextareaHeight() {
-  const textarea = document.getElementById('descriptionTextarea'); // Access the textarea using its id
-  if (textarea) {
-    textarea.style.height = 'auto'; // Reset height to auto to calculate the new height
-    textarea.offsetHeight; // This line forces the browser to recalculate layout
-    textarea.style.height = `${textarea.scrollHeight}px`; // Set the height to match the content
-    console.log('Adjusted height:', textarea.style.height); // Debugging log
-  }
+function tempPrint() {
+  console.log("form: ", form.value)
+  console.log("sections: ", sections.value)
+  console.log("fields: ", fields.value)
 }
 
-// Adjust height on mount
-onMounted(() => {
-  adjustTextareaHeight();
-});
+
+
 
 </script>

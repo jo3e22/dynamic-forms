@@ -15,10 +15,9 @@ return new class extends Migration
             $table->id();
             $table->uuid('code')->unique();
             $table->unsignedBigInteger('user_id');
-            $table->string('title')->nullable();
-            $table->text('description')->nullable();
             $table->char('status', 20);
-            $table->unsignedInteger('sections')->default(1);
+            $table->string('primary_color', 7)->nullable();
+            $table->string('secondary_color', 7)->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

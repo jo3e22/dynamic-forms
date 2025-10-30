@@ -11,6 +11,7 @@ use Mail;
 use App\Mail\ShareFormLinkMail;
 use App\Mail\FormCollaborationMail;
 use App\Models\User;
+use App\Models\FormSection;
 
 class Form extends Model
 {
@@ -22,15 +23,9 @@ class Form extends Model
     const STATUS_CLOSED = 'closed';
 
     protected $fillable = [
-        'title',
-        'description',
         'status',
         'sections',
         'user_id',
-    ];
-
-    protected $casts = [
-        'sections' => 'integer',
     ];
 
     public function getRouteKeyName()
@@ -43,6 +38,11 @@ class Form extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function sections()
+    {
+        return $this->hasMany(FormSection::class);
+    }
+
     public function fields()
     {
         return $this->hasMany(FormField::class);
@@ -51,6 +51,16 @@ class Form extends Model
     public function submissions()
     {
         return $this->hasMany(FormSubmission::class);
+    }
+
+    public function getTitleAttribute($value)
+    {
+        // Use loaded relation if present to avoid extra queries
+        $first = $this->relationLoaded('sections')
+            ? $this->sections->sortBy('section_order')->first()
+            : $this->sections()->orderBy('section_order')->first();
+
+        return $first?->title ?? $value;
     }
 
     public function collaborationUsers()
