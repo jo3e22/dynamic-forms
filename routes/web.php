@@ -26,6 +26,8 @@ Route::get('/forms/{form}/viewform', [FormController::class, 'viewform'])->name(
 Route::put('/forms/{form}/viewform/{submission}', [SubmissionController::class, 'submit'])->name('forms.createsubmission');
 Route::get('/forms/{form}/viewform/{submission}', [FormController::class, 'viewformsubmission'])->name('forms.viewformsubmission');
 
+Route::get('/forms/{form}/formjson', [FormController::class, 'jsonform'])->name('forms.json');
+
 
 
 

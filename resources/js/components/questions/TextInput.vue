@@ -1,11 +1,11 @@
 <template>
   <input
     v-model="textInput"
-    :disabled="mode === 'preview'"
+    :disabled="mode === 'preview' || mode === 'edit'"
     type="text"
-    :placeholder="field.placeholder || 'Enter text'"
-    class="w-full rounded-md px-3 py-2"
-    :class="mode === 'preview' ? 'border border-gray-300 bg-gray-100' : 'bg-white border border-gray-300'"
+    :placeholder="field.placeholder || 'Short answer text'"
+    class="w-1/2 py-1 text-sm"
+    :class="mode === 'preview' || mode === 'edit' ? 'border-b-1 border-dotted border-gray-300' : 'bg-white border border-gray-300'"
   />
 </template>
 
@@ -17,6 +17,8 @@ const props = defineProps({
   field: Object,
   submissionField: Object,
   mode: String,
+  form_primary_color: String, // Primary color for styling
+  form_secondary_color: String, // Secondary color for styling
 });
 
 // Computed property to handle JSON conversion

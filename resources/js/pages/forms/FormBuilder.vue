@@ -1,9 +1,9 @@
 <template>
-  <div :style="{ backgroundColor: formColors.background }" class="min-h-screen pb-8">
+  <div :style="{ backgroundColor: form_secondary_color }" class="min-h-screen pb-46">
 
-  <!--:style="{ backgroundColor: formColors.background }"-->
 
-    <header :style="{ backgroundColor: formColors.white }" class="shadow-md px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+
+    <header class="bg-white shadow-md px-6 py-4 flex items-center justify-between sticky top-0 z-10">
       <!-- Left: Back Arrow and Title -->
       <div class="flex items-center gap-4">
         <button class="text-gray-600 hover:text-gray-800">
@@ -14,6 +14,7 @@
 
       <!-- Right: Buttons -->
       <div class="flex items-center gap-3">
+        <button @click="formjson" class="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600">Form JSON</button>
         <button @click="tempPrint" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">Temp Print</button>
         <button @click="saveForm" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Save</button>
         <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Preview</button>
@@ -22,73 +23,97 @@
       </div>
     </header>
 
-    <main class="mx-auto w-[70%] mt-8">
+    <main class=" container-responsive mt-8">
       <!-- Title and Description -->
-      <div v-for="(section, sIdx) in sections" :key="section.id">
+      <div v-for="(section, sIdx) in data">
+        <h1>debug section:  {{ section }}</h1>
+        <h1>debug sIdx:  {{ sIdx }}</h1>
 
 
         <div
           class="selectable"
-          :data-select-key="`section:${section.id}`"
-          :class="isSelected(`section:${section.id ?? sIdx}`) ? 'shadow-lg' : ''"
-          @click.stop="select(`section:${section.id}`)"
-          tabindex="0"
-          @keydown.enter.stop.prevent="select(`section:${section.id}`)"
         >
           <TitleSec
             :form="form"
-            :section="section"
+            :titlesec="section.titlesec"
             :index="sIdx"
+            :form_primary_color="form_primary_color"
+            :form_secondary_color="form_secondary_color"
             :selected="isSelected(`section:${section.id}`)"
+            :title-error="titleError(sIdx)"
+            :description-error="descriptionError(sIdx)"
           />
         </div>
 
+
         <div class="space-y-4">
-          <div v-for="(field, fIdx) in fields"
+          <div v-for="(field, fIdx) in section.fields"
             class="selectable"
             :key="field.id ?? fIdx"
             :data-field-id="field.uuid"
             :data-select-key="`field:${field.id ?? fIdx}`"
-            :class="isSelected(`field:${field.id ?? fIdx}`) ? 'shadow-lg' : ''"
             @click.stop="select(`field:${field.id ?? fIdx}`)"
             tabindex="0"
             @keydown.enter.stop.prevent="select(`field:${field.id ?? fIdx}`)"
           >
-
-            <div class=" bg-white rounded shadow relative " :data-field-id="field.uuid">
+            <div
+              class=" bg-white rounded shadow relative "
+              :class="[
+                isSelected(`field:${field.id ?? fIdx}`) ? 'shadow-lg' : '',
+                hasFieldError(sIdx, fIdx) ? 'ring-2 ring-red-500 ring-offset-0' : ''
+              ]"
+              :data-field-id="field.uuid">
               <div
                 v-if="isSelected(fieldKey(field, fIdx))"
-                class="bg-green-500 absolute h-full w-2 rounded-l-md">
+                class="bg-green-500 absolute h-full w-2 rounded-l">
               </div>
-              <div class="p-4 space-y-4">
+              <div class="px-6 py-6 space-y-4">
                 <Toolbar
                   v-if="isSelected(fieldKey(field, fIdx))"
                   :field="field"
                   :index="fIdx"
-                  :total="fields.length"
-                  @copy="copyfield"
-                  @delete="handleDelete"
-                  @moveUp="moveFieldUp"
-                  @moveDown="moveFieldDown"
+                  :total="section.fields.length"
+                  @copy="copyfield(sIdx, fIdx)"
+                  @delete="handleDelete(sIdx, fIdx)"
+                  @moveUp="moveFieldUp(sIdx, fIdx)"
+                  @moveDown="moveFieldDown(sIdx, fIdx)"
                 />
 
-                <!-- Question + Answer -->
+              
                 <div class="flex-1 space-y-3">
-                  <!-- Question Label -->
                   <input
+                    v-if="isSelected(fieldKey(field, fIdx))"
                     v-model="field.label"
-                    :style="{backgroundColor: formColors.white }"
-                    class="w-full px-3 py-2"
-                    :class="'focus:outline-none focus:border-b-2 focus:border-blue-500'"
-                    :placeholder="field.label || 'question'"
+                    :class="[
+                      'focus:outline-none focus:border-b-2 hover:bg-gray-200',
+                      'w-full p-2 bg-gray-100 text-lg border-b-1 border-gray-300'
+                    ]"
+                    :placeholder="field.label || 'Question'"
+                    @focus="(e) => (e.target as HTMLInputElement).style.borderColor = form_primary_color"
+                    @blur="(e) => (e.target as HTMLInputElement).style.borderColor = 'gray'"
                   />
+                  <div
+                    v-else
+                    class="flex gap-1 items-start">
+                    <div class="pt-2 w-auto text-md text-left">
+                      {{ field.label ?? 'Question' }}
+                    </div>
+                    <div v-if="field.required" class="pt-2 text-lg text-red-500">
+                      *
+                    </div>
+                  </div>
+                  <hr v-if="hasFieldError(sIdx, fIdx)" class="h-px -mt-3 bg-red-500 border-0" />
+                  <p v-if="hasFieldError(sIdx, fIdx)" class="text-sm text-red-600">
+                    {{ fieldError(sIdx, fIdx) }}
+                  </p>
 
-                  <!-- Answer Input -->
                   <component
                     :is="getComponent(field.type)"
                     :field="field"
-                    :submissionField="getFakeSubmissionField(field)"
+                    :submissionField="getFakeSubmissionField(sIdx, fIdx)"
                     :mode="'edit'"
+                    :form_primary_color="form_primary_color"
+                    :form_secondary_color="form_secondary_color"
                   />
                 </div>
 
@@ -96,33 +121,73 @@
                   v-if="isSelected(fieldKey(field, fIdx))"
                   :field="field"
                   :index="fIdx"
-                  :total="fields.length"
+                  :total="section.fields.length"
+                  :form_primary_color="form_primary_color"
+                  :form_secondary_color="form_secondary_color"
                 />
               </div>
             </div>
 
           </div>
 
-          <div>
-            
-            <button id="toggle-buttons" @click="toggleButtons" class="toggle-button">
-              <span id="toggle-icon">{{ toggleIcon }}</span>
-            </button>
 
+
+
+          <div class="p-2">
+            <button
+              id="toggle-buttons"
+              @click="toggleButtons(sIdx)"
+              class="inline-flex items-center gap-3 p-0 bg-transparent border-0 cursor-pointer text-blue-600 hover:text-blue-700"
+              style="margin: 0; text-align: left;"
+            >
+              <span
+                id="toggle-icon"
+                :style="{ backgroundColor: form_primary_color }"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-full text-white text-4xl leading-none shadow-sm"
+              >
+                {{ getToggleIcon(sIdx) }}
+              </span>
+              <span
+                :style="{ WebkitTextFillColor: form_primary_color }"
+                class="text-base font-semibold"
+              >
+                Add new question
+              </span>
+            </button>
             
             <div
               id="buttons-container"
-              v-show="buttonsVisible"
-              class="grid grid-cols-3 gap-4 mt-4"
+              v-show="isButtonsVisible(sIdx)"
+              class="grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4"
             >
-              <button @click="addField_text" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+              <button 
+                @click="addField('text', sIdx)"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                :style="{ backgroundColor: form_primary_color }" 
+              >
                 Short text
               </button>
-              <button @click="addField_textlong" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              <button 
+                @click="addField('textarea', sIdx)"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                :style="{ backgroundColor: form_primary_color }" 
+              >
                 Long text
               </button>
-              <button @click="addField_multiplechoice" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+              <button 
+                @click="addField('multiplechoice', sIdx)"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                :style="{ backgroundColor: form_primary_color }" 
+              >
                 Multiple choice
+              </button>
+
+              <button 
+                @click="addSection(sIdx)"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                :style="{ backgroundColor: form_primary_color }" 
+              >
+                Add Section
               </button>
             </div>
           </div>
@@ -132,97 +197,7 @@
 
       </div>
 
-        <!--
-        <div class="p-4 space-y-4">
-          <input
-            v-model="form.title"
-            placeholder="Form Title"
-            class="mt-2 block w-full text-4xl border-b-1 focus:border-b-2 focus:outline-none"
-            :style="{
-              '--tw-border-opacity': '1',
-              borderColor: 'transparent',
-            }"
-            @focus="(e) => e.target.style.borderColor = formColors.primary"
-            @blur="(e) => e.target.style.borderColor = formColors.gray"
-          />
 
-          <textarea
-            v-model="form.description"
-            id="descriptionTextarea"
-            placeholder="Form Description"
-            class="mt-1 block w-full border-b-1 focus:border-b-2 focus:outline-none resize-none overflow-hidden"
-            :style="{
-              '--tw-border-opacity': '1',
-              borderColor: 'transparent',
-            }"
-            @focus="(e) => e.target.style.borderColor = formColors.primary"
-            @blur="(e) => e.target.style.borderColor = formColors.gray"
-            @input="adjustTextareaHeight"
-          />
-        </div>
-        -->
-
-      <!-- Questions Section -->
-
-      <!--
-      <div class="space-y-4">
-        <div v-for="(field, index) in fields"
-        :key="index"
-        @click="handleFocus(index)"
-        tabindex="0"
-        >
-          <FieldRenderer
-            v-if="selectedQuestionId === index"
-            :field="field"
-            :index="index"
-            :submissionField="getFakeSubmissionField(field)"
-            :total="fields.length"
-            :formColors="formColors"
-            @copy="copyfield"
-            @delete="handleDelete"
-            @moveUp="moveFieldUp"
-            @moveDown="moveFieldDown"
-          />
-
-          <QuestionRenderer
-            v-else
-            :field="field"
-            :index="index"
-            :submissionField="getFakeSubmissionField(field)"
-            :mode="'preview'"
-            :form-colors="formColors"
-            @click="handleFocus(index)"
-          />
-
-        </div>
-
-        <div>
-          
-          <button id="toggle-buttons" @click="toggleButtons" class="toggle-button">
-            <span id="toggle-icon">{{ toggleIcon }}</span>
-          </button>
-
-          
-          <div
-            id="buttons-container"
-            v-show="buttonsVisible"
-            class="grid grid-cols-3 gap-4 mt-4"
-          >
-            <button @click="addField_text" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-              Short text
-            </button>
-            <button @click="addField_textlong" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-              Long text
-            </button>
-            <button @click="addField_multiplechoice" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-              Multiple choice
-            </button>
-          </div>
-        </div>
-
-
-      </div>
-      -->
       <div v-if="showSuccess" class="success-message">
         {{ page.props.flash.success }}
       </div>
@@ -231,7 +206,7 @@
 </template>
 
 <script lang=ts setup>
-import { ref, watch, reactive, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import TitleSec from '../../components/editfields/TitleSec.vue';
@@ -245,30 +220,39 @@ import MultipleChoiceQuestion from '../../components/editfields/MultipleChoiceQu
 
 const props = defineProps({
   form: Object,
-  sections: Array,
-  fields: Array
+  data: Object,
 });
 
 const form = ref({ ...props.form });
-const sections = ref([...props.sections]);
-const fields = ref([...props.fields]);
+const data = ref(props.data);
 const page = usePage();
 const showSuccess = ref(false);
 
-form.value.primary_color = form.value.primary_color || 'rgb(120, 110, 127)'; // default purple-500
-form.value.secondary_color = form.value.secondary_color || 'rgb(255, 255, 255)'; // default purple-600
+const errors = computed<Record<string, string>>(() => (page.props.errors as any) ?? {});
 
-const formColors = reactive({
-  primary: 'rgb(120, 110, 127)', // purple-500
-  secondary: 'rgb(255, 255, 255)', // purple-600
-  background: 'rgb(240, 220, 255)', // blue-500
-  white: 'rgb(255, 255, 255)', // white
-  gray: 'rgb(243, 244, 246)', // gray-100
-  success: 'rgb(16, 185, 129)', // green-500
-  danger: 'rgb(239, 68, 68)', // red-500
-  warning: 'rgb(245, 158, 11)', // yellow-500
-  info: 'rgb(96, 165, 250)', // blue-300
-});
+// helpers to get an error for a specific field prop
+const titleError = (sIdx: number, prop = 'title') =>
+  errors.value[`data.${sIdx}.titlesec.${prop}`] ?? null;
+
+const hasTitleError = (sIdx: number, prop = 'title') =>
+  !!titleError(sIdx, prop);
+
+const descriptionError = (sIdx: number, prop = 'description') =>
+  errors.value[`data.${sIdx}.titlesec.${prop}`] ?? null;
+
+const hasDescriptionError = (sIdx: number, prop = 'description') =>
+  !!descriptionError(sIdx, prop);
+
+const fieldError = (sIdx: number, fIdx: number, prop = 'label') =>
+  errors.value[`data.${sIdx}.fields.${fIdx}.${prop}`] ?? null;
+
+const hasFieldError = (sIdx: number, fIdx: number, prop = 'label') =>
+  !!fieldError(sIdx, fIdx, prop);
+
+
+
+const form_primary_color = form.value.primary_color || 'rgb(158,13,6)'//'rgb(0, 204, 204)'; // default purple-500
+const form_secondary_color = form.value.secondary_color ||   'rgb(69,68,136)'//'rgb(230, 255, 255)'; // default purple-600
 
 
 const selectedKey = ref<string | null>(null);
@@ -278,9 +262,6 @@ const fieldKey = (field, idx) => `field:${field.id ?? idx}`;
 const sectionKey = (section) => `section:${section.id}`;
 
 
-
-
-//console.log(`${fields.value[1].type}`)
 
 watch(() => page.props.flash?.success, (message) => {
   if (message) {
@@ -313,7 +294,10 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-const getFakeSubmissionField = (field) => {
+const getFakeSubmissionField = (sIdx: number, fIdx: number) => {
+  const section = data.value?.[sIdx];
+  const fields = section.fields;
+  const field = fields[fIdx];
   return {
     id: null, // No real ID
     form_field_id: field.id,
@@ -322,88 +306,124 @@ const getFakeSubmissionField = (field) => {
   };
 };
 
-const buttonsVisible = ref(false);
-const toggleIcon = ref('+');
+const buttonsVisibleBySection = ref<Record<number, boolean>>({});
+const toggleIconBySection = ref<Record<number, string>>({});
 
-function toggleButtons() {
-  buttonsVisible.value = !buttonsVisible.value;
-  toggleIcon.value = buttonsVisible.value ? '×' : '+';
+// default initializer (works for array or object "data")
+watch(
+  () => data.value,
+  (val) => {
+    const keys = Array.isArray(val) ? val.map((_, i) => i) : Object.keys(val || {}).map(Number);
+    keys.forEach((i) => {
+      if (toggleIconBySection.value[i] == null) toggleIconBySection.value[i] = '+';
+      if (buttonsVisibleBySection.value[i] == null) buttonsVisibleBySection.value[i] = false;
+    });
+  },
+  { immediate: true, deep: false }
+);
+
+function toggleButtons(sIdx: number) {
+  buttonsVisibleBySection.value[sIdx] = !buttonsVisibleBySection.value[sIdx];
+  toggleIconBySection.value[sIdx] = buttonsVisibleBySection.value[sIdx] ? '×' : '+';
 }
 
-function addField_text() {
-  fields.value.push({
-    label: '',
-    type: 'text',
+function isButtonsVisible(sIdx: number) {
+  return !!buttonsVisibleBySection.value[sIdx];
+}
+
+function getToggleIcon(sIdx: number) {
+  return toggleIconBySection.value[sIdx] ?? '+';
+}
+
+
+
+
+function addField(typeIn: string, sIdx: number) {
+  const section = data.value?.[sIdx];
+  if (!section) return;
+
+  const newField = {
+    id: null,
+    label: null,
+    type: typeIn,
     required: false,
-    field_order: fields.value.length + 1,
-  });
+    options: null,
+    field_order: Array.isArray(section.fields) ? section.fields.length : 0,
+  };
+  if (!Array.isArray(section.fields)) section.fields = [];
+  section.fields.push(newField);
+
+  const fIdx = section.fields.length - 1;
+  select(fieldKey(newField, fIdx));
 }
 
-function addField_textlong() {
-  fields.value.push({
-    label: '',
-    type: 'textarea',
-    required: false,
-    field_order: fields.value.length + 1,
-  });
+function addSection(sIdx: number) {
+  const newSection = {
+    id: null,
+    titlesec: {
+      title: null,
+      description: null,
+    },
+    fields: [],
+    section_order: Array.isArray(data.value) ? data.value.length : 0,
+  };
+  data.value?.splice(sIdx + 1, 0, newSection);
+  select(sectionKey(newSection));
 }
 
-function addField_multiplechoice() {
-  fields.value.push({
-    label: '',
-    type: 'multiplechoice',
-    required: false,
-    field_order: fields.value.length + 1,
-  });
-}
+function copyfield(sIdx: number, fIdx: number) {
+  const section = data.value?.[sIdx];
+  const fields = section.fields;
+  const field = fields[fIdx];
+  if (!section) return;
 
-function copyfield(field, index) {
-  fields.value.push({
+  const copyField = {
+    id: null,
     label: field.label,
     type: field.type,
     required: field.required,
-    field_order: 0,
-  })
-  const clone = fields.value[fields.value.length-1]
-  //const index = fields.value.findIndex(f => f.id === field.id);
-  var i = fields.value.length-1
-  while (i > index+1) {
-    fields.value[i] = fields.value[i-1];
+    options: field.options,
+    field_order: Array.isArray(section.fields) ? section.fields.length : 0,
+  };
+  if (!Array.isArray(section.fields)) section.fields = [];
+  section.fields.push(copyField);
+
+  const clone = section.fields[section.fields.length-1]
+  var i = section.fields.length-1
+  while (i > fIdx+1) {
+    section.fields[i] = section.fields[i-1];
     i-=1
   }
-  fields.value[index+1] = clone  
+  section.fields[fIdx+1] = clone  
 }
 
-function handleDelete(fieldToDelete, index) {
-  //const index = fields.value.findIndex(f => f.id === fieldToDelete.id);
-  if (index !== -1) {
-    fields.value.splice(index, 1);
+function handleDelete(sIdx: number, fIdx: number) {
+  const section = data.value?.[sIdx];
+  if (fIdx !== -1) {
+    section.fields.splice(fIdx, 1);
   }
 }
 
-function moveFieldUp(field, index) {
-  //const index = fields.value.findIndex(f => f.id === field.id);
-  if (index > 0) {
-    const temp = fields.value[index - 1];
-    fields.value[index - 1] = fields.value[index];
-    fields.value[index] = temp;
+function moveFieldUp(sIdx: number, fIdx: number) {
+  const section = data.value?.[sIdx];
+  const fields = section.fields;
+  if (fIdx > 0) {
+    const temp = fields[fIdx - 1];
+    fields[fIdx - 1] = fields[fIdx];
+    fields[fIdx] = temp;
   }
 }
 
-function moveFieldDown(field, index) {
-  //const index = fields.value.findIndex(f => f.id === field.id);
-  if (index < fields.value.length - 1) {
-    const temp = fields.value[index + 1];
-    fields.value[index + 1] = fields.value[index];
-    fields.value[index] = temp;
+function moveFieldDown(sIdx: number, fIdx: number) {
+  const section = data.value?.[sIdx];
+  const fields = section.fields;
+  if (fIdx < fields.length - 1) {
+    const temp = fields[fIdx + 1];
+    fields[fIdx + 1] = fields[fIdx];
+    fields[fIdx] = temp;
   }
 }
 
-function updateFieldOrder() {
-  fields.value.forEach((f, i) => {
-    f.field_order = i + 1;
-  });
-}
 
 // Map field types to components
 const componentMap = {
@@ -413,16 +433,14 @@ const componentMap = {
   // Add more mappings for other field types
 };
 
-const getComponent = (type) => componentMap[type] || null;
+const getComponent = (type: string) => componentMap[type] || null;
 
 function saveForm() {
-  updateFieldOrder()
+  //updateFieldOrder()
   try {
     console.log('Save button clicked');
     router.put(`/forms/${form.value.code}/edit`, {
-      title: form.value.title,
-      description: form.value.description,
-      fields: fields.value
+      data: data.value
     }, {
       onSuccess: () => {
         console.log('Form updated!');
@@ -438,13 +456,49 @@ function saveForm() {
   }
 }
 
+
+
+
+
+
+
+
+// temporary functions for devleopment
 function tempPrint() {
   console.log("form: ", form.value)
-  console.log("sections: ", sections.value)
-  console.log("fields: ", fields.value)
+  console.log("data: ", data)
 }
 
-
-
+function formjson() {
+  const json = router.get(`/forms/${form.value.code}/formjson`, {
+  });
+  console.log("formjson: ", json)
+}
 
 </script>
+
+
+
+<style scoped>
+/* 100% by default, 70% on large screens, centered */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;   /* no padding on small screens */
+  padding-right: 0;  /* no padding on small screens */
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding-left: 1rem;   /* add padding from sm and up */
+    padding-right: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    width: 70%;
+  }
+}
+</style>

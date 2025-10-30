@@ -1,10 +1,10 @@
 <template>
   <textarea
     v-model="textInput"
-    :disabled="mode === 'preview'"
+    :disabled="mode === 'preview' || mode === 'edit'"
     :placeholder="field.placeholder || 'Enter text'"
     class="w-full rounded-md px-3 py-2"
-    :class="mode === 'preview' ? 'border border-gray-300 bg-gray-100' : 'bg-white border border-gray-300'"
+    :class="mode === 'preview' || mode === 'edit' ? 'border border-gray-300 bg-gray-100' : 'bg-white border border-gray-300'"
   ></textarea>
 </template>
 
@@ -16,6 +16,8 @@ const props = defineProps({
   field: Object,
   submissionField: Object,
   mode: String,
+  form_primary_color: String, // Primary color for styling
+  form_secondary_color: String, // Secondary color for styling
 });
 
   // Computed property to handle JSON conversion

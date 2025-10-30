@@ -18,6 +18,12 @@
           @input="handleOptionEdit(index)"
           placeholder="Add option"
           class="w-full px-3 py-2 border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
+          :style="{
+                    '--tw-border-opacity': '1',
+                    borderColor: 'transparent',
+          }"
+          @focus="(e) => (e.target as HTMLInputElement).style.borderColor = form_primary_color"
+          @blur="(e) => (e.target as HTMLInputElement).style.borderColor = 'transparent'"
         />
         <!-- Remove button -->
         <button
@@ -48,7 +54,7 @@
   </div>
 </template>
 
-<script setup>
+<script lang=ts setup>
 import { computed, ref, watch } from 'vue';
 import { defineProps } from 'vue';
 
@@ -57,6 +63,8 @@ const props = defineProps({
   field: Object, // Field configuration (e.g., label, options)
   submissionField: Object, // Submission field object
   mode: String, // Mode: 'preview', 'view', or 'edit'
+  form_primary_color: String, // Primary color for styling
+  form_secondary_color: String, // Secondary color for styling
 });
 
 // Reactive copy of options for editing

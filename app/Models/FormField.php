@@ -39,6 +39,11 @@ class FormField extends Model
         return $this->belongsTo(Form::class);
     }
 
+    public function section()
+    {
+        return $this->belongsTo(FormSection::class, 'section', 'id');
+    }
+
     public function answers()
     {
         return $this->hasMany(SubmissionFields::class);

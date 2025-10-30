@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Form\FormFieldController;
 use App\Http\Controllers\Form\FormSectionController;
 use App\Http\Controllers\Form\SubmissionController;
 use App\Http\Controllers\Form\SubmissionFieldController;
@@ -51,10 +52,11 @@ class FormController extends Controller
 
     public function edit(Form $form)
     {
+        $data = $this->buildFormData($form);
+
         return Inertia::render('forms/FormBuilder', [
             'form' => $form,
-            'sections' => $form->sections,
-            'fields' => $form->fields
+            'data' => $data
         ]);
     }
 
@@ -95,6 +97,44 @@ class FormController extends Controller
         ]);
     }
 
+    public function jsonform(Form $form)
+    {
+        $data = $this->buildFormData($form);
+        return response()->json(['data' => $data]);
+    }
+
+    protected function buildFormData(Form $form)
+    {
+        // Return the form structure as JSON
+        $form->load([
+            'sections' => fn($q) => $q->orderBy('section_order'),
+            'sections.fields' => fn($q) => $q->orderBy('field_order'),
+        ]);
+
+        $data = [];
+
+        foreach ($form->sections as $i => $section) {
+            $sectionKey = $i;
+
+            $data[$sectionKey] = [
+                'id' => $section->id,
+                'titlesec' => [
+                    'title' => $section->title,
+                    'description' => $section->description,
+                ],
+                'fields' => $section->fields->map(fn($f) => [
+                    'id' => $f->id,
+                    'label' => $f->label,
+                    'type' => $f->type,
+                    'options' => $f->options,
+                    'required' => (bool) $f->required,
+                ])->values()->all(),
+            ];
+        }
+
+        return  $data;
+    }
+
     public function viewformsubmission(Form $form, Submission $submission)
     {
         return Inertia::render('forms/DynamicForm', [
@@ -109,49 +149,83 @@ class FormController extends Controller
     {
         \Log::info('Update method hit', $request->all());
 
-        $request->validate([
-            'title' => 'nullable|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'fields' => 'present|array'
+        $validated = $request->validate([
+            'data' => ['required', 'array', 'min:1'],
+            'data.*.id' => ['required', 'integer', 'exists:form_sections,id'],
+            'data.*.titlesec' => ['required', 'array'],
+            'data.*.titlesec.title' => ['required', 'string', 'max:55'],
+            'data.*.titlesec.description' => ['nullable', 'string', 'max:1000'],
+            'data.*.fields' => ['present', 'array'],
+            'data.*.fields.*.label' => ['required', 'string', 'max:255'],
+        ], [
+            'data.*.titlesec.title.required' => 'Section title is required.',
+            'data.*.titlesec.title.string' => 'Section title must be a string.',
+            'data.*.titlesec.title.max' => 'Section title may not be greater than 55 characters.',
+            'data.*.titlesec.description.string' => 'Section description must be a string.',
+            'data.*.titlesec.description.max' => 'Section description may not be greater than 1000 characters.',
+            'data.*.fields.*.label.required' => 'Field label is required.',
         ]);
 
-        \Log::info('Update validate passed', $request->all());
-    
-        $form->update([
-            'title' => $request->title,
-            'description' => $request->description
-        ]);
+        $sections = collect($validated['data']);
+        $existingSectionIds = $form->sections()->pluck('id')->toArray();
 
-        \Log::info('Update passed', $request->all());
-    
-        $existingFieldIds = [];
-    
-        foreach ($request->fields as $fieldData) {
-            if (isset($fieldData['id'])) {
-                // Update existing field
-                $field = $form->fields()->find($fieldData['id']);
-                if ($field) {
-                    $field->update([
+        foreach ($sections as $i => $sectionData) {
+            \Log::info('Updating section', ['section_index' => $i]);
+            $titlesec = data_get($sectionData, 'titlesec', []);
+            $title = data_get($titlesec, 'title', null);
+            $description = data_get($titlesec, 'description', null);
+            \Log::info('section data', $sectionData);
+            \Log::info("title, {$title}");
+            \Log::info("description, {$description}");
+
+            if (isset($sectionData['id']) && in_array($sectionData['id'], $existingSectionIds)) {
+                $section = $form->sections()->find($sectionData['id']);
+
+                $section->update([
+                    'title' => $title,
+                    'description' => $description,
+                    'section_order' => $i,
+                ]);
+            } else {
+                $section = $form->sections()->create([
+                    'title' => $title,
+                    'description' => $description,
+                    'section_order' => $i,
+                ]);
+                $existingSectionIds[] = $section->id;
+            }
+            $existingFieldIds = [];
+
+            foreach ($sectionData['fields'] as $j => $fieldData) {
+                \Log::info('Updating field', ['field_index' => $j]);
+                if (isset($fieldData['id'])) {
+                    // Update existing field
+                    $field = $section->fields()->find($fieldData['id']);
+                    if ($field) {
+                        $field->update([
+                            'label' => $fieldData['label'],
+                            'type' => $fieldData['type'] ?? 'text',
+                            'options' => $fieldData['options'] ?? null,
+                            'required' => $fieldData['required'] ?? false,
+                            'field_order' => $j,
+                        ]);
+                        $existingFieldIds[] = $field->id;
+                    }
+                } else {
+                    // Create new field
+                    $newField = app(FormFieldController::class)->create($form, $section);
+                    $newField->update([
                         'label' => $fieldData['label'],
                         'type' => $fieldData['type'] ?? 'text',
                         'options' => $fieldData['options'] ?? null,
                         'required' => $fieldData['required'] ?? false,
-                        'uuid' => $fieldData['uuid'] ?? $field->uuid,
+                        'field_order' => $j,
                     ]);
-                    $existingFieldIds[] = $field->id;
+                    $existingFieldIds[] = $newField->id;
                 }
-            } else {
-                // Create new field
-                $newField = $form->fields()->create([
-                    'label' => $fieldData['label'],
-                    'type' => $fieldData['type'] ?? 'text',
-                    'options' => $fieldData['options'] ?? null,
-                    'required' => $fieldData['required'] ?? false,
-                    'uuid' => $fieldData['uuid'] ?? (string) Str::uuid(),
-                ]);
-                $existingFieldIds[] = $newField->id;
             }
         }
+
 
         \Log::info('Update fields passed', $request->all());
     
