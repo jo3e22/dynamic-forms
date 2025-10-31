@@ -17,17 +17,56 @@
         <button @click="formjson" class="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600">Form JSON</button>
         <button @click="tempPrint" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">Temp Print</button>
         <button @click="saveForm" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Save</button>
+        <button @click="openColorPicker" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Style</button>
         <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Preview</button>
         <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Share</button>
         <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
       </div>
     </header>
 
+
+
+    <!-- Color Picker Modal -->
+    <div v-if="showColorPicker" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/50" @click="closeColorPicker"></div>
+      <div class="relative bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+        <h3 class="text-lg font-semibold mb-4">Choose theme colors</h3>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium mb-2">Primary</label>
+            <div class="flex items-center gap-3">
+              <input type="color" v-model="tempPrimary" class="w-10 h-10 p-0 border-0 bg-transparent cursor-pointer" />
+              <input type="text" v-model="tempPrimary" class="border rounded px-2 py-1 w-28 sm:w-36 md:w-44" placeholder="#9e0d06" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Secondary</label>
+            <div class="flex items-center gap-3">
+              <input type="color" v-model="tempSecondary" class="w-10 h-10 p-0 border-0 bg-transparent cursor-pointer" />
+              <input type="text" v-model="tempSecondary" class="border rounded px-2 py-1 w-28 sm:w-36 md:w-44" placeholder="#454488" />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-600">Preview:</span>
+            <span :style="{ backgroundColor: form_primary_color }" class="inline-block w-6 h-6 rounded"></span>
+            <span :style="{ backgroundColor: form_secondary_color }" class="inline-block w-6 h-6 rounded"></span>
+          </div>
+          <div class="flex gap-2">
+            <button @click="closeColorPicker" class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</button>
+            <button @click="saveColors" class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
     <main class=" container-responsive mt-8">
       <!-- Title and Description -->
       <div v-for="(section, sIdx) in data">
-        <h1>debug section:  {{ section }}</h1>
-        <h1>debug sIdx:  {{ sIdx }}</h1>
 
 
         <div
@@ -251,8 +290,55 @@ const hasFieldError = (sIdx: number, fIdx: number, prop = 'label') =>
 
 
 
-const form_primary_color = form.value.primary_color || 'rgb(158,13,6)'//'rgb(0, 204, 204)'; // default purple-500
-const form_secondary_color = form.value.secondary_color ||   'rgb(69,68,136)'//'rgb(230, 255, 255)'; // default purple-600
+//const form_primary_color = form.value.primary_color || 'rgb(158,13,6)'//'rgb(0, 204, 204)'; // default purple-500
+//const form_secondary_color = form.value.secondary_color ||   'rgb(69,68,136)'//'rgb(230, 255, 255)'; // default purple-600
+
+
+
+
+// Reactive color fallbacks
+const form_primary_color = computed(() => {
+  const c = form.value?.primary_color;
+  return c && String(c).trim() ? c : '#9e0d06';
+});
+const form_secondary_color = computed(() => {
+  const c = form.value?.secondary_color;
+  return c && String(c).trim() ? c : '#454488';
+});
+
+// Modal state
+const showColorPicker = ref(false);
+const tempPrimary = ref<string>(form_primary_color.value);
+const tempSecondary = ref<string>(form_secondary_color.value);
+
+function openColorPicker() {
+  tempPrimary.value = form_primary_color.value;
+  tempSecondary.value = form_secondary_color.value;
+  showColorPicker.value = true;
+}
+function closeColorPicker() {
+  showColorPicker.value = false;
+}
+function saveColors() {
+  if (!data.value) data.value = {} as any;
+  (data.value as any).primary_color = tempPrimary.value;
+  (data.value as any).secondary_color = tempSecondary.value;
+  showColorPicker.value = false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const selectedKey = ref<string | null>(null);

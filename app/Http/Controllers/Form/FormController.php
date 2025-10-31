@@ -113,6 +113,9 @@ class FormController extends Controller
 
         $data = [];
 
+        //$data['primary_color'] = $form->primary_color;
+        //$data['secondary_color'] = $form->secondary_color;
+
         foreach ($form->sections as $i => $section) {
             $sectionKey = $i;
 
@@ -151,12 +154,19 @@ class FormController extends Controller
 
         $validated = $request->validate([
             'data' => ['required', 'array', 'min:1'],
-            'data.*.id' => ['required', 'integer', 'exists:form_sections,id'],
+            'data.primary_color' => ['nullable', 'string', 'max:7'],
+            'data.secondary_color' => ['nullable', 'string', 'max:7'],
+            'data.*.id' => ['nullable', 'integer', 'exists:form_sections,id'],
             'data.*.titlesec' => ['required', 'array'],
             'data.*.titlesec.title' => ['required', 'string', 'max:55'],
             'data.*.titlesec.description' => ['nullable', 'string', 'max:1000'],
             'data.*.fields' => ['present', 'array'],
+            'data.*.fields.*.id' => ['nullable', 'integer', 'exists:form_fields,id'],
             'data.*.fields.*.label' => ['required', 'string', 'max:255'],
+            'data.*.fields.*.type' => ['nullable', 'string', 'in:text,textarea,multiplechoice'],
+            'data.*.fields.*.options' => ['nullable', 'json'],
+            'data.*.fields.*.required' => ['nullable', 'boolean'],
+
         ], [
             'data.*.titlesec.title.required' => 'Section title is required.',
             'data.*.titlesec.title.string' => 'Section title must be a string.',
@@ -198,6 +208,7 @@ class FormController extends Controller
 
             foreach ($sectionData['fields'] as $j => $fieldData) {
                 \Log::info('Updating field', ['field_index' => $j]);
+                \Log::info('field data', $fieldData);
                 if (isset($fieldData['id'])) {
                     // Update existing field
                     $field = $section->fields()->find($fieldData['id']);
