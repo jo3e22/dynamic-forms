@@ -1,73 +1,27 @@
 <template>
   <div :style="{ backgroundColor: form_secondary_color }" class="min-h-screen pb-46">
 
+    <Header
+      :form="form"
+      @openColorPicker="openColorPicker"
+      @saveForm="saveForm"
+      @formjson="formjson"
+      @tempPrint="tempPrint"
+    />
 
-
-    <header class="bg-white shadow-md px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-      <!-- Left: Back Arrow and Title -->
-      <div class="flex items-center gap-4">
-        <button class="text-gray-600 hover:text-gray-800">
-          ←
-        </button>
-        <h1 class="text-xl font-semibold text-gray-800">{{ form.title ?? 'Untitled Form' }}</h1>
-      </div>
-
-      <!-- Right: Buttons -->
-      <div class="flex items-center gap-3">
-        <button @click="formjson" class="bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600">Form JSON</button>
-        <button @click="tempPrint" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">Temp Print</button>
-        <button @click="saveForm" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">Save</button>
-        <button @click="openColorPicker" class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600">Style</button>
-        <button class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">Preview</button>
-        <button class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Share</button>
-        <button class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
-      </div>
-    </header>
-
-
-
-    <!-- Color Picker Modal -->
-    <div v-if="showColorPicker" class="fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black/50" @click="closeColorPicker"></div>
-      <div class="relative bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-        <h3 class="text-lg font-semibold mb-4">Choose theme colors</h3>
-        <div class="grid grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium mb-2">Primary</label>
-            <div class="flex items-center gap-3">
-              <input type="color" v-model="tempPrimary" class="w-10 h-10 p-0 border-0 bg-transparent cursor-pointer" />
-              <input type="text" v-model="tempPrimary" class="border rounded px-2 py-1 w-28 sm:w-36 md:w-44" placeholder="#9e0d06" />
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Secondary</label>
-            <div class="flex items-center gap-3">
-              <input type="color" v-model="tempSecondary" class="w-10 h-10 p-0 border-0 bg-transparent cursor-pointer" />
-              <input type="text" v-model="tempSecondary" class="border rounded px-2 py-1 w-28 sm:w-36 md:w-44" placeholder="#454488" />
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-6 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-gray-600">Preview:</span>
-            <span :style="{ backgroundColor: form_primary_color }" class="inline-block w-6 h-6 rounded"></span>
-            <span :style="{ backgroundColor: form_secondary_color }" class="inline-block w-6 h-6 rounded"></span>
-          </div>
-          <div class="flex gap-2">
-            <button @click="closeColorPicker" class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">Cancel</button>
-            <button @click="saveColors" class="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ColorPicker
+      v-if="showColorPicker"
+      :form_primary_color="form_primary_color"
+      :form_secondary_color="form_secondary_color"
+      @close="closeColorPicker"
+      @save="saveColors"
+    />
 
 
 
     <main class=" container-responsive mt-8">
       <!-- Title and Description -->
       <div v-for="(section, sIdx) in data">
-
 
         <div
           class="selectable"
@@ -78,96 +32,85 @@
             :index="sIdx"
             :form_primary_color="form_primary_color"
             :form_secondary_color="form_secondary_color"
-            :selected="isSelected(`section:${section.id}`)"
             :title-error="titleError(sIdx)"
             :description-error="descriptionError(sIdx)"
           />
         </div>
 
 
+
+
         <div class="space-y-4">
-          <div v-for="(field, fIdx) in section.fields"
-            class="selectable"
+          <SelectableContainer
+            v-for="(field, fIdx) in section.fields"
             :key="field.id ?? fIdx"
-            :data-field-id="field.uuid"
-            :data-select-key="`field:${field.id ?? fIdx}`"
-            @click.stop="select(`field:${field.id ?? fIdx}`)"
-            tabindex="0"
-            @keydown.enter.stop.prevent="select(`field:${field.id ?? fIdx}`)"
+            :form_primary_color="form_primary_color"
+            :form_secondary_color="form_secondary_color"
+            :selected="isSelected(fieldKey(field, fIdx))"
+            :select-key="fieldKey(field, fIdx)"
+            :show-toolbar="true"
+            @select="select"
+            @unselect="clearSelection"
+            :class="hasFieldError(sIdx, fIdx) ? 'ring-2 ring-red-500 ring-offset-0' : ''"
           >
-            <div
-              class=" bg-white rounded shadow relative "
-              :class="[
-                isSelected(`field:${field.id ?? fIdx}`) ? 'shadow-lg' : '',
-                hasFieldError(sIdx, fIdx) ? 'ring-2 ring-red-500 ring-offset-0' : ''
-              ]"
-              :data-field-id="field.uuid">
-              <div
+            <template #toolbar>
+              <Toolbar
+                :field="field"
+                :index="fIdx"
+                :total="section.fields.length"
+                @copy="copyfield(sIdx, fIdx)"
+                @delete="handleDelete(sIdx, fIdx)"
+                @moveUp="moveFieldUp(sIdx, fIdx)"
+                @moveDown="moveFieldDown(sIdx, fIdx)"
+              />
+            </template>
+
+            <div class="flex-1 space-y-3">
+              <input
                 v-if="isSelected(fieldKey(field, fIdx))"
-                class="bg-green-500 absolute h-full w-2 rounded-l">
-              </div>
-              <div class="px-6 py-6 space-y-4">
-                <Toolbar
-                  v-if="isSelected(fieldKey(field, fIdx))"
-                  :field="field"
-                  :index="fIdx"
-                  :total="section.fields.length"
-                  @copy="copyfield(sIdx, fIdx)"
-                  @delete="handleDelete(sIdx, fIdx)"
-                  @moveUp="moveFieldUp(sIdx, fIdx)"
-                  @moveDown="moveFieldDown(sIdx, fIdx)"
-                />
-
-              
-                <div class="flex-1 space-y-3">
-                  <input
-                    v-if="isSelected(fieldKey(field, fIdx))"
-                    v-model="field.label"
-                    :class="[
-                      'focus:outline-none focus:border-b-2 hover:bg-gray-200',
-                      'w-full p-2 bg-gray-100 text-lg border-b-1 border-gray-300'
-                    ]"
-                    :placeholder="field.label || 'Question'"
-                    @focus="(e) => (e.target as HTMLInputElement).style.borderColor = form_primary_color"
-                    @blur="(e) => (e.target as HTMLInputElement).style.borderColor = 'gray'"
-                  />
-                  <div
-                    v-else
-                    class="flex gap-1 items-start">
-                    <div class="pt-2 w-auto text-md text-left">
-                      {{ field.label ?? 'Question' }}
-                    </div>
-                    <div v-if="field.required" class="pt-2 text-lg text-red-500">
-                      *
-                    </div>
-                  </div>
-                  <hr v-if="hasFieldError(sIdx, fIdx)" class="h-px -mt-3 bg-red-500 border-0" />
-                  <p v-if="hasFieldError(sIdx, fIdx)" class="text-sm text-red-600">
-                    {{ fieldError(sIdx, fIdx) }}
-                  </p>
-
-                  <component
-                    :is="getComponent(field.type)"
-                    :field="field"
-                    :submissionField="getFakeSubmissionField(sIdx, fIdx)"
-                    :mode="'edit'"
-                    :form_primary_color="form_primary_color"
-                    :form_secondary_color="form_secondary_color"
-                  />
+                v-model="field.label"
+                :class="[
+                  'focus:outline-none focus:border-b-2 hover:bg-gray-200',
+                  'w-full p-2 bg-gray-100 text-lg border-b-1 border-gray-300'
+                ]"
+                :placeholder="field.label || 'Question'"
+                @focus="(e) => (e.target as HTMLInputElement).style.borderColor = form_primary_color"
+                @blur="(e) => (e.target as HTMLInputElement).style.borderColor = 'gray'"
+              />
+              <div v-else class="flex gap-1 items-start">
+                <div class="pt-2 w-auto text-md text-left">
+                  {{ field.label ?? 'Question' }}
                 </div>
+                <div v-if="field.required" class="pt-2 text-lg text-red-500">*</div>
+              </div>
 
-                <Optionsbar
-                  v-if="isSelected(fieldKey(field, fIdx))"
+              <hr v-if="hasFieldError(sIdx, fIdx)" class="h-px -mt-3 bg-red-500 border-0" />
+              <p v-if="hasFieldError(sIdx, fIdx)" class="text-sm text-red-600">
+                {{ fieldError(sIdx, fIdx) }}
+              </p>
+
+              <component
+                :is="getComponent(field.type)"
+                :field="field"
+                :submissionField="getFakeSubmissionField(sIdx, fIdx)"
+                :mode="'edit'"
+                :form_primary_color="form_primary_color"
+                :form_secondary_color="form_secondary_color"
+              />
+            </div>
+
+            <template #optionbar>
+              <Optionsbar
                   :field="field"
                   :index="fIdx"
                   :total="section.fields.length"
                   :form_primary_color="form_primary_color"
                   :form_secondary_color="form_secondary_color"
                 />
-              </div>
-            </div>
-
-          </div>
+            </template>
+          </SelectableContainer>
+ 
+          
 
 
 
@@ -248,6 +191,9 @@
 import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
+import Header from '../../components/FormBuilderHeader.vue';
+import ColorPicker from '../../components/FormBuilderColorPicker.vue';
+import SelectableContainer from '../../components/FormBuilderSelectableContainer.vue';
 import TitleSec from '../../components/editfields/TitleSec.vue';
 import Toolbar from '../../components/editfields/Toolbar.vue';
 import Optionsbar from '../../components/editfields/Optionsbar.vue';
@@ -346,6 +292,7 @@ const select = (key: string) => { selectedKey.value = key; };
 const isSelected = (key: string) => selectedKey.value === key;
 const fieldKey = (field, idx) => `field:${field.id ?? idx}`;
 const sectionKey = (section) => `section:${section.id}`;
+const clearSelection = () => { selectedKey.value = null; };
 
 
 
