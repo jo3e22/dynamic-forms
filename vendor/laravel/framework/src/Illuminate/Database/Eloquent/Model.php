@@ -201,7 +201,7 @@ abstract class Model implements Arrayable, ArrayAccess, CanBeEscapedWhenCastToSt
     /**
      * The callback that is responsible for handling lazy loading violations.
      *
-     * @var callable|null
+     * @var (callable(self, string))|null
      */
     protected static $lazyLoadingViolationCallback;
 
@@ -526,7 +526,7 @@ abstract class Model implements Arrayable, ArrayAccess, CanBeEscapedWhenCastToSt
     /**
      * Register a callback that is responsible for handling lazy loading violations.
      *
-     * @param  callable|null  $callback
+     * @param  (callable(self, string))|null  $callback
      * @return void
      */
     public static function handleLazyLoadingViolationUsing(?callable $callback)
@@ -2595,7 +2595,17 @@ abstract class Model implements Arrayable, ArrayAccess, CanBeEscapedWhenCastToSt
         $this->relationAutoloadCallback = null;
         $this->relationAutoloadContext = null;
 
-        return array_keys(get_object_vars($this));
+        $keys = get_object_vars($this);
+
+        if (version_compare(PHP_VERSION, '8.4.0', '>=')) {
+            foreach ((new ReflectionClass($this))->getProperties() as $property) {
+                if ($property->hasHooks()) {
+                    unset($keys[$property->getName()]);
+                }
+            }
+        }
+
+        return array_keys($keys);
     }
 
     /**
