@@ -77,9 +77,6 @@ import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import QuestionRenderer from '@/components/QuestionRenderer.vue';
 
-const form = ref({ ...props.form });
-const data = ref(props.data);
-
 const props = defineProps({
   form: Object,
   fields: Array,
