@@ -23,15 +23,15 @@
     </button>
     <button
       @click="moveUp"
-      :disabled="props.index === 0"
+      :disabled="props.index <= 1"
       :class="[
         'hover:text-gray-800',
-        props.index !== 0 ? 'cursor-pointer' :
-        props.index === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600'
+        props.index !< 1 ? 'cursor-pointer' :
+        props.index <= 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600'
       ]"
       aria-label="Move question up"
     >
-      <ArrowUpIcon :style="{ color: index === 0 ? '#9CA3AF' : '#000000' }" />
+      <ArrowUpIcon :style="{ color: index <= 1 ? '#9CA3AF' : '#000000' }" />
     </button>
   </div>
   <div class="flex gap-2">

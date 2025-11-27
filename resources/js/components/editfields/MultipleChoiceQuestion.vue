@@ -24,6 +24,8 @@
           }"
           @focus="(e) => (e.target as HTMLInputElement).style.borderColor = form_primary_color"
           @blur="(e) => (e.target as HTMLInputElement).style.borderColor = 'transparent'"
+          @keydown.space="(e) => e.stopImmediatePropagation()"
+          @keyup.space="(e) => e.stopImmediatePropagation()"
         />
         <!-- Remove button -->
         <button

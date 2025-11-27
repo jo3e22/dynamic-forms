@@ -6,6 +6,7 @@ const props = withDefaults(defineProps<{
   form_secondary_color: string;
   selected?: boolean;
   selectKey: string;
+  showTitleAccent?: boolean;
   showToolbar?: boolean;
 }>(), {
   selected: false,
@@ -57,6 +58,8 @@ onBeforeUnmount(() => {
     @keydown.enter.stop.prevent="onSelect"
     @keydown.space.stop.prevent="onSelect"
   >
+    <!-- Title Accent -->
+     <div v-if="showTitleAccent" :style="{ backgroundColor: form_primary_color }" class="h-3 w-full rounded-t-md"></div>
     <!-- Accent -->
     <div 
       class="absolute left-0 top-0 h-full rounded-l transition-all duration-200"

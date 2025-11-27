@@ -17,28 +17,8 @@
       @save="saveColors"
     />
 
-
-
     <main class=" container-responsive mt-8">
-      <!-- Title and Description -->
       <div v-for="(section, sIdx) in data">
-
-        <div
-          class="selectable"
-        >
-          <TitleSec
-            :form="form"
-            :titlesec="section.titlesec"
-            :index="sIdx"
-            :form_primary_color="form_primary_color"
-            :form_secondary_color="form_secondary_color"
-            :title-error="titleError(sIdx)"
-            :description-error="descriptionError(sIdx)"
-          />
-        </div>
-
-
-
 
         <div class="space-y-4">
           <SelectableContainer
@@ -48,7 +28,8 @@
             :form_secondary_color="form_secondary_color"
             :selected="isSelected(fieldKey(field, fIdx))"
             :select-key="fieldKey(field, fIdx)"
-            :show-toolbar="true"
+            :show-title-accent="field.type === 'title' || field.type === 'title-primary'"
+            :show-toolbar="field.type !== 'title-primary'"
             @select="select"
             @unselect="clearSelection"
             :class="hasFieldError(sIdx, fIdx) ? 'ring-2 ring-red-500 ring-offset-0' : ''"
@@ -71,14 +52,20 @@
                 v-model="field.label"
                 :class="[
                   'focus:outline-none focus:border-b-2 hover:bg-gray-200',
-                  'w-full p-2 bg-gray-100 text-lg border-b-1 border-gray-300'
+                  'w-full p-2 bg-gray-100 border-b-1 border-gray-300',
+                  (field.type === 'title' || field.type === 'title-primary') ? 'text-4xl' : 'text-lg'
                 ]"
                 :placeholder="field.label || 'Question'"
                 @focus="(e) => (e.target as HTMLInputElement).style.borderColor = form_primary_color"
                 @blur="(e) => (e.target as HTMLInputElement).style.borderColor = 'gray'"
+                @keydown.space="(e) => e.stopImmediatePropagation()"
+                @keyup.space="(e) => e.stopImmediatePropagation()"
               />
               <div v-else class="flex gap-1 items-start">
-                <div class="pt-2 w-auto text-md text-left">
+                <div
+                  class="pt-2 w-auto text-left"
+                  :class="(field.type === 'title' || field.type === 'title-primary') ? 'text-4xl' : 'text-lg'"
+                >
                   {{ field.label ?? 'Question' }}
                 </div>
                 <div v-if="field.required" class="pt-2 text-lg text-red-500">*</div>
@@ -163,7 +150,13 @@
               >
                 Multiple choice
               </button>
-
+              <button 
+                @click="addField('title', sIdx)"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                :style="{ backgroundColor: form_primary_color }" 
+              >
+                Title Section
+              </button>
               <button 
                 @click="addSection(sIdx)"
                 class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
@@ -188,7 +181,7 @@
 </template>
 
 <script lang=ts setup>
-import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, computed, onMounted, onBeforeUnmount, reactive } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import Header from '../../components/FormBuilderHeader.vue';
@@ -200,6 +193,7 @@ import Optionsbar from '../../components/editfields/Optionsbar.vue';
 import FieldRenderer from '../../components/FieldRenderer.vue';
 import QuestionRenderer from '@/components/QuestionRenderer.vue';
 import TextQuestion from '../../components/questions/TextInput.vue';
+import TitleField from '../../components/questions/TitleField.vue';
 import TextareaQuestion from '../../components/questions/TextareaInput.vue';
 import MultipleChoiceQuestion from '../../components/editfields/MultipleChoiceQuestion.vue';
 
@@ -440,7 +434,7 @@ function handleDelete(sIdx: number, fIdx: number) {
 function moveFieldUp(sIdx: number, fIdx: number) {
   const section = data.value?.[sIdx];
   const fields = section.fields;
-  if (fIdx > 0) {
+  if (fIdx > 1) {
     const temp = fields[fIdx - 1];
     fields[fIdx - 1] = fields[fIdx];
     fields[fIdx] = temp;
@@ -460,6 +454,8 @@ function moveFieldDown(sIdx: number, fIdx: number) {
 
 // Map field types to components
 const componentMap = {
+  "title-primary": TitleField,
+  title: TitleField,
   text: TextQuestion,
   textarea: TextareaQuestion,
   multiplechoice: MultipleChoiceQuestion,

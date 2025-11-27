@@ -1,11 +1,12 @@
 <template>
-  <div :style="{ backgroundColor: formColors.background }" class="min-h-screen py-8">
+  <div :style="{ backgroundColor: form_secondary_color }" class="min-h-screen py-8">
 
     <main class="mx-auto w-[70%] p-6 ">
       <!-- Title and Description -->
-      <div :style="{ backgroundColor: formColors.white }" class="mb-6 rounded-md shadow-sm">
-        <div :style="{ backgroundColor: formColors.primary }" class="h-2 w-full rounded-t-md"></div>
-        <div class="p-4 space-y-4">
+      <div class="mb-6 rounded-md shadow bg-white">
+        <div :style="{ backgroundColor: form_primary_color }" class="h-3 w-full rounded-t-md"></div>
+
+        <div class=" px-6 pt-3 pb-6 space-y-3 ">
           <div
             placeholder="Form Title"
             class="mt-2 block w-full text-4xl border-b-1 focus:border-b-2 focus:outline-none"
@@ -16,14 +17,20 @@
           >
             {{ form.title }}
           </div>
-
           <div
             id="descriptionTextarea"
             placeholder="Form Description"
-            class="mt-1 block w-full border-b-1 focus:border-b-2 focus:outline-none resize-none overflow-hidden"
+            class=" block w-full border-b-2 focus:outline-none resize-none overflow-hidden"
+            :class="[
+                'w-full border',
+            ]"
             :style="{
-              '--tw-border-opacity': '1',
-              borderColor: 'transparent',
+            '--tw-border-opacity': '1',
+            borderTop: 'none',
+            borderLeft: 'none',
+            borderRight: 'none',
+            borderColor: 'transparent',
+            backgroundColor: 'transparent',
             }"
             @input="adjustTextareaHeight"
           >
@@ -31,6 +38,10 @@
           </div>
         </div>
       </div>
+
+
+
+
 
       <!-- Questions Section -->
       <div class="space-y-4">
@@ -61,10 +72,18 @@
 </template>
 
 <script setup>
-import { ref, watch, reactive, onMounted } from 'vue';
+import { ref, watch, reactive, onMounted, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
 import QuestionRenderer from '@/components/QuestionRenderer.vue';
+
+const props = defineProps({
+  form: Object,
+  data: Object,
+});
+
+const form = ref({ ...props.form });
+const data = ref(props.data);
 
 const props = defineProps({
   form: Object,
@@ -80,6 +99,7 @@ const submissionFields = ref([...props.submissionFields]);
 
 fields.value[0].type = 'textarea';
 
+console.log('Form:', form.value);
 console.log('Fields:', fields.value);
 console.log('submissionFields:', submissionFields.value);
 
@@ -96,6 +116,16 @@ const formColors = reactive({
   danger: 'rgb(239, 68, 68)', // red-500
   warning: 'rgb(245, 158, 11)', // yellow-500
   info: 'rgb(96, 165, 250)', // blue-300
+});
+
+// Reactive color fallbacks
+const form_primary_color = computed(() => {
+  const c = form.value?.primary_color;
+  return c && String(c).trim() ? c : '#9e0d06';
+});
+const form_secondary_color = computed(() => {
+  const c = form.value?.secondary_color;
+  return c && String(c).trim() ? c : '#454488';
 });
 
 

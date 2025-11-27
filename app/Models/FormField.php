@@ -10,6 +10,8 @@ class FormField extends Model
     use HasFactory;
 
     const TEMPLATES = [
+        'title-primary',
+        'title',
         'short-answer',
         'email',
         'long-answer',
