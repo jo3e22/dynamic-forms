@@ -395,6 +395,7 @@ function addSection(sIdx: number) {
     section_order: Array.isArray(data.value) ? data.value.length : 0,
   };
   data.value?.splice(sIdx + 1, 0, newSection);
+  addField('title-primary', sIdx + 1);
   select(sectionKey(newSection));
 }
 

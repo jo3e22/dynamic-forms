@@ -23,6 +23,11 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'Forms',
+        href: '/forms',
+        icon: LayoutGrid,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
