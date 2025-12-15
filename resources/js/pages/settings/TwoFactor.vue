@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HeadingSmall from '@/components/HeadingSmall.vue';
+import HeadingSmall from '@/components/common/HeadingSmall.vue';
 import TwoFactorRecoveryCodes from '@/components/TwoFactorRecoveryCodes.vue';
 import TwoFactorSetupModal from '@/components/TwoFactorSetupModal.vue';
 import { Badge } from '@/components/ui/badge';

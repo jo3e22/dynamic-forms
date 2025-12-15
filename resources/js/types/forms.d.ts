@@ -4,7 +4,7 @@ export type FieldType =
   | 'long-answer'
   | 'checkbox'
   | 'multiple-choice'
-  | 'textarea';  // Remove title-primary and title
+  | 'textarea';
 
 export type FormStatus = 'draft' | 'pending' | 'open' | 'closed';
 
@@ -35,22 +35,22 @@ export interface FormSectionDTO {
 export interface FormFieldDTO {
   id: number;
   form_id: number;
-  section: number; // section_id
+  section: number; // section_id in database
   label: string;
   type: FieldType;
-  options: string | null; // JSON string
+  options: string | null; // JSON string from backend
   required: boolean;
   field_order: number;
   created_at: string;
   updated_at: string;
 }
 
-// Frontend Models (what you work with in Vue)
+// Frontend Models (what you work with in Vue components)
 export interface FormField {
   id: number | null;
   label: string;
   type: FieldType;
-  options: any; // Parsed JSON (could be string[], object, etc.)
+  options: any; // Parsed JSON
   required: boolean;
   field_order: number;
 }
@@ -74,22 +74,27 @@ export interface Form {
   sections: FormSection[];
 }
 
-// Builder data structure (for editing - sections are selectable items too)
-export interface FormBuilderField {
-  id: number | null;
-  label: string;
-  type: FieldType;
-  options: any;
-  required: boolean;
-  field_order: number;
+// Builder-specific types (for FormBuilder component)
+export interface FormBuilderField extends FormField {
+  // Can add builder-specific properties here if needed
 }
 
-export interface FormBuilderSection {
-  id: number | null;
-  section_order: number;
-  title: string | null;
-  description: string | null;
-  fields: FormBuilderField[];
+export interface FormBuilderSection extends FormSection {
+  // Can add builder-specific properties here if needed
 }
 
 export type FormBuilderData = FormBuilderSection[];
+
+// Props interfaces for components
+export interface FormBuilderProps {
+  form: FormDTO;
+  data: FormBuilderData;
+}
+
+export interface FieldComponentProps {
+  field: FormField;
+  submissionField?: any;
+  mode: 'edit' | 'preview' | 'fill';
+  form_primary_color: string;
+  form_secondary_color: string;
+}

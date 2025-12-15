@@ -16,22 +16,20 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-
-
+// Form routes
 Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
 Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create');
 Route::get('/forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit');
 Route::put('/forms/{form}/edit', [FormController::class, 'update'])->name('forms.update');
+Route::delete('/forms/{form}', [FormController::class, 'destroy'])->name('forms.destroy');
+
+// Form viewing and submission
 Route::get('/forms/{form}/viewform', [FormController::class, 'viewform'])->name('forms.viewform');
 Route::put('/forms/{form}/viewform/{submission}', [SubmissionController::class, 'submit'])->name('forms.createsubmission');
 Route::get('/forms/{form}/viewform/{submission}', [FormController::class, 'viewformsubmission'])->name('forms.viewformsubmission');
 
+// JSON export (for debugging)
 Route::get('/forms/{form}/formjson', [FormController::class, 'jsonform'])->name('forms.json');
-
-
-
-
-
 
 Route::get('/forms/{form}', function (Form $form) {
     return Inertia::render('DynamicForm', [
@@ -40,8 +38,6 @@ Route::get('/forms/{form}', function (Form $form) {
         'mode' => 'fill'
     ]);
 })->name('forms.show');
-
-
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -23,8 +23,8 @@ class FormController extends Controller
     public function index()
     {
         $forms = Form::with(['sections' => fn($q) => $q->orderBy('section_order')])
-        ->latest()
-        ->get(['id','status','code']);
+            ->latest()
+            ->get(['id','status','code']);
 
         return Inertia::render('forms/Index', [
             'forms' => $forms->map(fn($f) => [
@@ -43,16 +43,17 @@ class FormController extends Controller
         $form = new Form();
         $form->generateCode();
         $form->status = Form::STATUS_DRAFT;
+        $form->primary_color = '#3B82F6'; // Default blue
+        $form->secondary_color = '#EFF6FF'; // Light blue
         $current_user->forms()->save($form);
 
-        app(FormSectionController::class)->create($form);
-        $titlefield = app(FormFieldController::class)->create($form, $form->sections->first());
-        $titlefield->update([
-            'label' => 'Title',
-            'type' => 'title-primary',
-            'required' => false,
-            'field_order' => 0,
-        ]);
+        // Create first section with title and description
+        $section = new FormSection();
+        $section->form_id = $form->id;
+        $section->section_order = 0;
+        $section->title = 'Untitled Form';
+        $section->description = null;
+        $section->save();
 
         return redirect()->route('forms.edit', $form);
     }
@@ -62,55 +63,21 @@ class FormController extends Controller
         $data = $this->buildFormData($form);
 
         return Inertia::render('forms/FormBuilder', [
-            'form' => $form,
+            'form' => [
+                'id' => $form->id,
+                'code' => $form->code,
+                'status' => $form->status,
+                'user_id' => $form->user_id,
+                'primary_color' => $form->primary_color ?? '#3B82F6',
+                'secondary_color' => $form->secondary_color ?? '#EFF6FF',
+                'created_at' => $form->created_at,
+                'updated_at' => $form->updated_at,
+            ],
             'data' => $data
         ]);
     }
 
-    public function viewform(Form $form)
-    {
-        // if $form->requires_user is true, ensure user and check for previous submission.
-        $current_user = Auth::user();
-
-        // Check if user has any submissions for this form
-        $submission = $current_user->submissions()->where('form_id', $form->id)->first();
-
-        if (!$submission) {
-            $submission_controller = new SubmissionController();
-            $submission = $submission_controller->create($form);
-            \Log::info('submission created', $submission->toArray());
-        }
-        else {
-            \Log::info('submission fetched', $submission->toArray());
-        }
-
-        foreach ($form->fields as $field) {
-            $submissionField = $submission->submissionFields()->where('form_field_id', $field->id)->first();
-            if (!$submissionField) {
-                $submission_field_controller = new SubmissionFieldController();
-                $submissionField = $submission_field_controller->create($field, $submission);
-                \Log::info('submission field created', $submissionField->toArray());
-            }
-            else {
-                \Log::info('submission field fetched', $submissionField->toArray());
-            }
-        }
-
-        return Inertia::render('forms/DynamicForm', [
-            'form' => $form,
-            'fields' => $form->fields,
-            'submission' => $submission,
-            'submissionFields' => $submission->submissionFields
-        ]);
-    }
-
-    public function jsonform(Form $form)
-    {
-        $data = $this->buildFormData($form);
-        return response()->json(['data' => $data]);
-    }
-
-    protected function buildFormData(Form $form)
+    protected function buildFormData(Form $form): array
     {
         $form->load([
             'sections' => fn($q) => $q->orderBy('section_order'),
@@ -126,7 +93,7 @@ class FormController extends Controller
                 ->sortBy('field_order')
                 ->values();
 
-            $data[$i] = [
+            $data[] = [
                 'id' => $section->id,
                 'section_order' => $section->section_order,
                 'title' => $section->title,
@@ -135,7 +102,7 @@ class FormController extends Controller
                     'id' => $f->id,
                     'label' => $f->label,
                     'type' => $f->type,
-                    'options' => $f->options,
+                    'options' => $f->options, // Already parsed by Laravel's JSON cast
                     'required' => (bool) $f->required,
                     'field_order' => $f->field_order,
                 ])->all(),
@@ -144,7 +111,151 @@ class FormController extends Controller
 
         return $data;
     }
-    
+
+    public function update(Request $request, Form $form): Response
+    {
+        \Log::info('Form update started', ['form_id' => $form->id]);
+
+        $validated = $request->validate([
+            'data' => ['required', 'array', 'min:1'],
+            'data.*.id' => ['nullable', 'integer', 'exists:form_sections,id'],
+            'data.*.title' => ['nullable', 'string', 'max:500'],
+            'data.*.description' => ['nullable', 'string', 'max:2000'],
+            'data.*.section_order' => ['required', 'integer', 'min:0'],
+            'data.*.fields' => ['required', 'array'],
+            'data.*.fields.*.id' => ['nullable', 'integer', 'exists:form_fields,id'],
+            'data.*.fields.*.label' => ['required', 'string', 'max:255'],
+            'data.*.fields.*.type' => ['required', 'string', 'in:short-answer,email,long-answer,checkbox,multiple-choice,textarea'],
+            'data.*.fields.*.options' => ['nullable'],
+            'data.*.fields.*.required' => ['required', 'boolean'],
+            'data.*.fields.*.field_order' => ['required', 'integer', 'min:0'],
+            'colors.primary' => ['nullable', 'string', 'max:7'],
+            'colors.secondary' => ['nullable', 'string', 'max:7'],
+        ]);
+
+        // Update form colors if provided
+        if (isset($validated['colors'])) {
+            $form->update([
+                'primary_color' => $validated['colors']['primary'] ?? $form->primary_color,
+                'secondary_color' => $validated['colors']['secondary'] ?? $form->secondary_color,
+            ]);
+        }
+
+        $sections = collect($validated['data']);
+        $existingSectionIds = [];
+        $existingFieldIds = [];
+
+        foreach ($sections as $sectionData) {
+            // Create or update section
+            if (isset($sectionData['id'])) {
+                $section = $form->sections()->find($sectionData['id']);
+                if ($section) {
+                    $section->update([
+                        'title' => $sectionData['title'],
+                        'description' => $sectionData['description'],
+                        'section_order' => $sectionData['section_order'],
+                    ]);
+                    $existingSectionIds[] = $section->id;
+                }
+            } else {
+                $section = $form->sections()->create([
+                    'title' => $sectionData['title'],
+                    'description' => $sectionData['description'],
+                    'section_order' => $sectionData['section_order'],
+                ]);
+                $existingSectionIds[] = $section->id;
+            }
+
+            // Process fields for this section
+            foreach ($sectionData['fields'] as $fieldData) {
+                if (isset($fieldData['id'])) {
+                    // Update existing field
+                    $field = $form->fields()->find($fieldData['id']);
+                    if ($field) {
+                        $field->update([
+                            'section' => $section->id,
+                            'label' => $fieldData['label'],
+                            'type' => $fieldData['type'],
+                            'options' => $fieldData['options'],
+                            'required' => $fieldData['required'],
+                            'field_order' => $fieldData['field_order'],
+                        ]);
+                        $existingFieldIds[] = $field->id;
+                    }
+                } else {
+                    // Create new field
+                    $field = $form->fields()->create([
+                        'section' => $section->id,
+                        'label' => $fieldData['label'],
+                        'type' => $fieldData['type'],
+                        'options' => $fieldData['options'],
+                        'required' => $fieldData['required'],
+                        'field_order' => $fieldData['field_order'],
+                    ]);
+                    $existingFieldIds[] = $field->id;
+                }
+            }
+        }
+
+        // Delete removed sections and fields
+        $form->sections()->whereNotIn('id', $existingSectionIds)->delete();
+        $form->fields()->whereNotIn('id', $existingFieldIds)->delete();
+
+        \Log::info('Form update completed', ['form_id' => $form->id]);
+
+        // Rebuild data for response
+        $data = $this->buildFormData($form->fresh(['sections', 'fields']));
+
+        return Inertia::render('forms/FormBuilder', [
+            'form' => [
+                'id' => $form->id,
+                'code' => $form->code,
+                'status' => $form->status,
+                'user_id' => $form->user_id,
+                'primary_color' => $form->primary_color,
+                'secondary_color' => $form->secondary_color,
+                'created_at' => $form->created_at,
+                'updated_at' => $form->updated_at,
+            ],
+            'data' => $data,
+            'flash' => [
+                'success' => 'Form updated successfully.',
+            ],
+        ]);
+    }
+
+    public function jsonform(Form $form)
+    {
+        $data = $this->buildFormData($form);
+        return response()->json(['data' => $data]);
+    }
+
+    public function viewform(Form $form)
+    {
+        $current_user = Auth::user();
+        $submission = $current_user->submissions()->where('form_id', $form->id)->first();
+
+        if (!$submission) {
+            $submission_controller = new SubmissionController();
+            $submission = $submission_controller->create($form);
+        }
+
+        foreach ($form->fields as $field) {
+            $submissionField = $submission->submissionFields()->where('form_field_id', $field->id)->first();
+            if (!$submissionField) {
+                $submission_field_controller = new SubmissionFieldController();
+                $submissionField = $submission_field_controller->create($field, $submission);
+            }
+        }
+
+        return Inertia::render('forms/DynamicForm', [
+            'form' => $form,
+            'fields' => $form->fields,
+            'submission' => $submission,
+            'submissionFields' => $submission->submissionFields
+        ]);
+    }
+
     public function viewformsubmission(Form $form, Submission $submission)
     {
         return Inertia::render('forms/DynamicForm', [
@@ -155,133 +266,16 @@ class FormController extends Controller
         ]);
     }
 
-    public function update(Request $request, Form $form): Response
+    public function destroy(Form $form): RedirectResponse
     {
-        \Log::info('Update method hit', $request->all());
-
-        $validated = $request->validate([
-            'data' => ['required', 'array', 'min:1'],
-            'data.primary_color' => ['nullable', 'string', 'max:7'],
-            'data.secondary_color' => ['nullable', 'string', 'max:7'],
-            'data.*.id' => ['nullable', 'integer', 'exists:form_sections,id'],
-            'data.*.fields' => ['present', 'array'],
-            'data.*.fields.*.id' => ['nullable', 'integer', 'exists:form_fields,id'],
-            'data.*.fields.*.label' => ['required', 'string', 'max:255'],
-            'data.*.fields.*.type' => ['nullable', 'string', 'in:title-primary,title,text,textarea,multiplechoice'],
-            'data.*.fields.*.options' => ['nullable', 'json'],
-            'data.*.fields.*.required' => ['nullable', 'boolean'],
-
-        ], [
-            'data.*.fields.*.label.required' => 'Field label is required.',
-        ]);
-
-        $sections = collect($validated['data']);
-        $existingSectionIds = $form->sections()->pluck('id')->toArray();
-
-        foreach ($sections as $i => $sectionData) {
-            \Log::info('Updating section', ['section_index' => $i]);
-            $titlesec = data_get($sectionData, 'titlesec', []);
-            $title = data_get($titlesec, 'title', null);
-            $description = data_get($titlesec, 'description', null);
-            \Log::info('section data', $sectionData);
-            \Log::info("title, {$title}");
-            \Log::info("description, {$description}");
-
-            if (isset($sectionData['id']) && in_array($sectionData['id'], $existingSectionIds)) {
-                $section = $form->sections()->find($sectionData['id']);
-
-                $section->update([
-                    'title' => $title,
-                    'description' => $description,
-                    'section_order' => $i,
-                ]);
-            } else {
-                $section = $form->sections()->create([
-                    'title' => $title,
-                    'description' => $description,
-                    'section_order' => $i,
-                ]);
-                $existingSectionIds[] = $section->id;
-            }
-            $existingFieldIds = [];
-
-            foreach ($sectionData['fields'] as $j => $fieldData) {
-                \Log::info('Updating field', ['field_index' => $j]);
-                \Log::info('field data', $fieldData);
-                if (isset($fieldData['id'])) {
-                    // Update existing field
-                    $field = $section->fields()->find($fieldData['id']);
-                    if ($field) {
-                        $field->update([
-                            'label' => $fieldData['label'],
-                            'type' => $fieldData['type'] ?? 'text',
-                            'options' => $fieldData['options'] ?? null,
-                            'required' => $fieldData['required'] ?? false,
-                            'field_order' => $j,
-                        ]);
-                        $existingFieldIds[] = $field->id;
-                    }
-                } else {
-                    // Create new field
-                    $newField = app(FormFieldController::class)->create($form, $section);
-                    $newField->update([
-                        'label' => $fieldData['label'],
-                        'type' => $fieldData['type'] ?? 'text',
-                        'options' => $fieldData['options'] ?? null,
-                        'required' => $fieldData['required'] ?? false,
-                        'field_order' => $j,
-                    ]);
-                    $existingFieldIds[] = $newField->id;
-                }
-            }
+        // Check if user owns the form (add authorization if needed)
+        if ($form->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
         }
 
+        $form->delete(); // Soft delete due to SoftDeletes trait
 
-        \Log::info('Update fields passed', $request->all());
-    
-        // Optionally delete fields that were removed in the frontend
-        $form->fields()->whereNotIn('id', $existingFieldIds)->delete();
-
-        \Log::info('Update deletefields passed', $request->all());
-    
-        //return back()->with('success', 'Form updated successfully.');
-        //return back()->with('success', __('A reset link will be sent if the account exists.'));
-        //return redirect()->route('forms.edit', $form->code)->with('success', 'Form updated successfully.');
-        return Inertia::render('forms/FormBuilder', [
-            'form' => $form->fresh(),
-            'flash' => [
-                'success' => 'Form updated successfully.',
-            ],
-        ]);
-
-    }
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public function store(request $request)
-    {
-        $current_user = Auth::user();
-
-        foreach ($request->fields as $field) {
-            $form->fields()->create([
-                'label' => $field['label'],
-                'type' => $field['type'],
-                'options' => $field['options'] ?? null,
-                'required' => $field['required'] ?? false,
-                'uuid' => (string) Str::uuid(),
-            ]);
-        }
+        return redirect()->route('forms.index')->with('success', 'Form deleted successfully.');
     }
 
 }

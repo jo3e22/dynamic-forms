@@ -10,13 +10,12 @@ class FormField extends Model
     use HasFactory;
 
     const TEMPLATES = [
-        'title-primary',
-        'title',
         'short-answer',
         'email',
         'long-answer',
         'checkbox',
         'multiple-choice',
+        'textarea',
     ];
 
     protected $fillable = [
@@ -48,6 +47,6 @@ class FormField extends Model
 
     public function answers()
     {
-        return $this->hasMany(SubmissionFields::class);
+        return $this->hasMany(SubmissionField::class);
     }
 }
