@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Form;
 
-use Auth;
+
 use Inertia\Inertia;
 use App\Models\Form;
 use App\Services\FormService;
@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
 use Inertia\Response;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class FormController extends Controller
 {
@@ -145,5 +147,23 @@ class FormController extends Controller
 
         $form->delete();
         return redirect()->route('forms.index')->with('success', 'Form deleted successfully.');
+    }
+
+    public function show(Form $form)
+    {
+        if ($form->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $recentSubmissions = $form->submissions()
+            ->with('user')
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        return Inertia::render('forms/FormDashboard', [
+            'form' => $form->load('submissions'),
+            'recentSubmissions' => $recentSubmissions,
+        ]);
     }
 }
