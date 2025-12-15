@@ -112,35 +112,39 @@ class FormController extends Controller
 
     protected function buildFormData(Form $form)
     {
-        // Return the form structure as JSON
         $form->load([
             'sections' => fn($q) => $q->orderBy('section_order'),
-            'sections.fields' => fn($q) => $q->orderBy('field_order'),
+            'fields' => fn($q) => $q->orderBy('field_order'),
         ]);
 
         $data = [];
 
-        //$data['primary_color'] = $form->primary_color;
-        //$data['secondary_color'] = $form->secondary_color;
-
         foreach ($form->sections as $i => $section) {
-            $sectionKey = $i;
+            // Get fields for this section
+            $sectionFields = $form->fields
+                ->where('section', $section->id)
+                ->sortBy('field_order')
+                ->values();
 
-            $data[$sectionKey] = [
+            $data[$i] = [
                 'id' => $section->id,
-                'fields' => $section->fields->map(fn($f) => [
+                'section_order' => $section->section_order,
+                'title' => $section->title,
+                'description' => $section->description,
+                'fields' => $sectionFields->map(fn($f) => [
                     'id' => $f->id,
                     'label' => $f->label,
                     'type' => $f->type,
                     'options' => $f->options,
                     'required' => (bool) $f->required,
-                ])->values()->all(),
+                    'field_order' => $f->field_order,
+                ])->all(),
             ];
         }
 
-        return  $data;
+        return $data;
     }
-
+    
     public function viewformsubmission(Form $form, Submission $submission)
     {
         return Inertia::render('forms/DynamicForm', [
