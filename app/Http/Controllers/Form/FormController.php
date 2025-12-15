@@ -23,17 +23,10 @@ class FormController extends Controller
 
     public function index()
     {
-        $forms = Form::with(['sections' => fn($q) => $q->orderBy('section_order')])
-            ->latest()
-            ->get(['id','status','code']);
-
-        return Inertia::render('forms/Index', [
-            'forms' => $forms->map(fn($f) => [
-                'id' => $f->id,
-                'code' => $f->code,
-                'status' => $f->status,
-                'title' => $f->title,
-            ]),
+        $forms = Auth::user()->forms()->withCount('submissions')->latest()->get();
+        
+        return Inertia::render('Dashboard', [
+            'forms' => $forms,
         ]);
     }
 

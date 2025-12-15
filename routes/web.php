@@ -12,11 +12,10 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Dashboard now shows forms
+Route::get('dashboard', [FormController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-// Form routes
+// Keep /forms route as alias to dashboard for now
 Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
 Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create');
 Route::get('/forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit');
