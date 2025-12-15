@@ -35,9 +35,12 @@ class AppServiceProvider extends ServiceProvider
                     ->map(fn($form) => [
                         'id' => $form->id,
                         'code' => $form->code,
-                        'title' => $form->title, // Uses the accessor
+                        'title' => $form->title,
                     ])
                 : [],
+            'unreadNotificationsCount' => fn () => Auth::check()
+                ? Auth::user()->unreadNotifications()->count()
+                : 0,
         ]);
     }
 }

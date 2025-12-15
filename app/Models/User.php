@@ -61,4 +61,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Submission::class);
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->hasMany(Notification::class)->unread();
+    }
 }

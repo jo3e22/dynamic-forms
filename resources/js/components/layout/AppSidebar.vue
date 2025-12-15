@@ -22,13 +22,15 @@ import {
 } from '@/components/ui/collapsible';
 import { urlIsActive } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, FileText, ChevronRight } from 'lucide-vue-next';
+import { BookOpen, Folder, FileText, ChevronRight, Bell } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
+import { Badge } from '@/components/ui/badge';
 
 const page = usePage();
 
 const forms = computed(() => page.props.forms as any[] || []);
+const unreadCount = computed(() => page.props.unreadNotificationsCount as number || 0);
 
 const footerNavItems = [
     {
@@ -62,6 +64,25 @@ const footerNavItems = [
             <SidebarGroup class="px-2 py-0">
                 <SidebarGroupLabel>Platform</SidebarGroupLabel>
                 <SidebarMenu>
+                    <!-- Notifications -->
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            as-child
+                            :is-active="urlIsActive('/notifications', page.url)"
+                            :tooltip="'Notifications'"
+                        >
+                            <Link href="/notifications" class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <Bell />
+                                    <span>Notifications</span>
+                                </div>
+                                <Badge v-if="unreadCount > 0" variant="destructive" class="ml-auto">
+                                    {{ unreadCount }}
+                                </Badge>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+
                     <!-- Forms with collapsible sub-items -->
                     <Collapsible
                         as-child

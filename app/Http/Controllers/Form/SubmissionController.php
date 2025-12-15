@@ -8,6 +8,7 @@ use App\Models\Form;
 use App\Models\Submission;
 use App\Services\FormService;
 use App\Services\SubmissionService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Inertia\Response;
@@ -16,7 +17,8 @@ class SubmissionController extends Controller
 {
     public function __construct(
         protected FormService $formService,
-        protected SubmissionService $submissionService
+        protected SubmissionService $submissionService,
+        protected NotificationService $notificationService
     ) {}
 
     public function index(Form $form): Response
@@ -93,6 +95,12 @@ class SubmissionController extends Controller
 
         $this->submissionService->saveSubmissionFields($submission, $validated['submissionFields']);
         $this->submissionService->markAsCompleted($submission);
+        // Notify form owner of new submission
+        $this->notificationService->notifyNewSubmission(
+            $form->user,
+            $form,
+            $submission
+        );
 
         $formTitle = $this->formService->getFormTitle($form);
 

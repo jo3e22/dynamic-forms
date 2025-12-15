@@ -1,5 +1,8 @@
 <?php
 
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -7,6 +10,7 @@ use App\Models\Form;
 use App\Models\Submission;
 use App\Http\Controllers\Form\FormController;
 use App\Http\Controllers\Form\SubmissionController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -38,5 +42,14 @@ Route::get('/forms/{form}/submissions/{submission}', [SubmissionController::clas
 // JSON export (for debugging)
 Route::get('/forms/{form}/formjson', [FormController::class, 'jsonform'])->name('forms.json');
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+
+// Notifications
+Route::get('/notifications', [NotificationController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('notifications.index');
+Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])
+    ->middleware(['auth'])
+    ->name('notifications.read');
+Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])
+    ->middleware(['auth'])
+    ->name('notifications.markAllRead');
