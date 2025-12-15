@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
             'forms' => fn () => Auth::check() 
                 ? Auth::user()->forms()
                     ->with('sections:id,form_id,title,section_order')
+                    ->latest()
                     ->get()
                     ->map(fn($form) => [
                         'id' => $form->id,

@@ -37,7 +37,7 @@ const props = defineProps<{
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Forms',
-        href: '/dashboard',
+        href: '/forms',
     },
     {
         title: props.form.title,
@@ -61,7 +61,7 @@ function deleteForm() {
   if (confirm(`Are you sure you want to delete "${props.form.title}"?`)) {
     router.delete(`/forms/${props.form.code}`, {
       onSuccess: () => {
-        router.visit('/dashboard');
+        router.visit('/forms');
       },
     });
   }

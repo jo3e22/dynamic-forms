@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Calendar, CheckCircle2, Clock, XCircle, List, LayoutGrid, Table } from 'lucide-vue-next';
+import { ArrowLeft, User, Calendar, CheckCircle2, Clock, XCircle, List, LayoutGrid, Table, Users, FileText } from 'lucide-vue-next';
 import type { FormDTO, FormBuilderData } from '@/types';
 
 interface SubmissionField {
@@ -63,19 +65,71 @@ const allFields = computed(() => {
   return fields;
 });
 
+// Computed stats
+const completedCount = computed(() => 
+  props.submissions.filter(s => s.status === 'complete').length
+);
+
+const incompleteCount = computed(() => 
+  props.submissions.filter(s => s.status === 'incomplete').length
+);
+
+const breadcrumbs: BreadcrumbItem[] = props.selectedSubmission ? [
+    {
+        title: 'Forms',
+        href: '/forms',
+    },
+    {
+        title: formTitle.value,
+        href: `/forms/${props.form.code}`,
+    },
+    {
+        title: 'Submissions',
+        href: `/forms/${props.form.code}/submissions`,
+    },
+    {
+        title: `#${props.selectedSubmission.id}`,
+        href: `/forms/${props.form.code}/submissions/${props.selectedSubmission.code}`,
+    },
+] : [
+    {
+        title: 'Forms',
+        href: '/forms',
+    },
+    {
+        title: formTitle.value,
+        href: `/forms/${props.form.code}`,
+    },
+    {
+        title: 'Submissions',
+        href: `/forms/${props.form.code}/submissions`,
+    },
+];
+
 // Status badge styling
 function getStatusStyle(status: string) {
-  const styles = {
-    draft: { bg: 'bg-gray-100', text: 'text-gray-800', icon: Clock },
-    pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: Clock },
-    open: { bg: 'bg-blue-100', text: 'text-blue-800', icon: CheckCircle2 },
-    closed: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle2 },
+  const colors = {
+    draft: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
+    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100',
+    open: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100',
+    closed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+    incomplete: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100',
+    complete: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
   };
-  return styles[status as keyof typeof styles] || styles.draft;
+  return colors[status as keyof typeof colors] || colors.draft;
 }
 
 // Format date
 function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+}
+
+function formatDateTime(dateString: string): string {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
@@ -104,11 +158,6 @@ function viewSubmission(submission: Submission) {
 // Go back to submissions list
 function backToList() {
   router.visit(`/forms/${props.form.code}/submissions`);
-}
-
-// Go back to form list
-function goBack() {
-  router.visit('/forms');
 }
 
 // Get field label from form data
@@ -167,289 +216,275 @@ function getSubmitterName(submission: Submission): string {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div 
-      class="w-full py-4 px-6 shadow-sm"
-      :style="{ backgroundColor: form_primary_color }"
-    >
-      <div class="max-w-7xl mx-auto flex items-center justify-between">
-        <div>
-          <h1 class="text-2xl font-semibold text-white">
-            {{ formTitle }}
-          </h1>
-          <p class="text-sm text-white/80 mt-1">
-            {{ selectedSubmission ? 'Submission Detail' : 'Submissions' }}
-          </p>
-        </div>
-        <div class="flex gap-2">
-          <Button
-            v-if="selectedSubmission"
-            variant="ghost"
-            size="sm"
-            @click="backToList"
-            class="text-white hover:bg-white/10"
-          >
-            <List class="w-4 h-4 mr-2" />
-            All Submissions
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            @click="goBack"
-            class="text-white hover:bg-white/10"
-          >
-            <ArrowLeft class="w-4 h-4 mr-2" />
-            Back to Forms
-          </Button>
-        </div>
-      </div>
-    </div>
+  <Head :title="`Submissions - ${formTitle}`" />
 
-    <div class="max-w-7xl mx-auto px-6 py-8">
+  <AppLayout :breadcrumbs="breadcrumbs">
+    <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
       <!-- List View -->
       <div v-if="!selectedSubmission">
-        <div class="mb-6 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-900">
-            All Submissions ({{ submissions.length }})
-          </h2>
-          
-          <!-- View Toggle -->
-          <div v-if="submissions.length > 0" class="flex gap-2">
-            <Button
-              :variant="viewMode === 'cards' ? 'default' : 'outline'"
-              size="sm"
-              @click="viewMode = 'cards'"
-            >
-              <LayoutGrid class="w-4 h-4 mr-2" />
-              Cards
-            </Button>
-            <Button
-              :variant="viewMode === 'table' ? 'default' : 'outline'"
-              size="sm"
-              @click="viewMode = 'table'"
-            >
-              <Table class="w-4 h-4 mr-2" />
-              Table
-            </Button>
-          </div>
-        </div>
-
-        <div v-if="submissions.length === 0" class="text-center py-16">
-          <div 
-            class="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center bg-gray-100"
-          >
-            <XCircle class="w-10 h-10 text-gray-400" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            No Submissions Yet
-          </h3>
-          <p class="text-gray-600">
-            This form hasn't received any submissions yet.
-          </p>
-        </div>
-
-        <!-- Card View -->
-        <div v-else-if="viewMode === 'cards'" class="grid gap-4">
-          <Card 
-            v-for="submission in submissions" 
-            :key="submission.id"
-            class="hover:shadow-md transition-shadow cursor-pointer"
-            @click="viewSubmission(submission)"
-          >
-            <CardHeader>
-              <div class="flex items-start justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <CardTitle class="text-lg">
-                      Submission #{{ submission.id }}
-                    </CardTitle>
-                    <Badge 
-                      :class="`${getStatusStyle(submission.status).bg} ${getStatusStyle(submission.status).text}`"
-                    >
-                      {{ submission.status }}
-                    </Badge>
-                  </div>
-                  <CardDescription class="flex flex-col gap-1">
-                    <span v-if="submission.user" class="flex items-center gap-2">
-                      <User class="w-4 h-4" />
-                      {{ submission.user.name }} ({{ submission.user.email }})
-                    </span>
-                    <span v-else-if="submission.email" class="flex items-center gap-2">
-                      <User class="w-4 h-4" />
-                      {{ submission.email }}
-                    </span>
-                    <span class="flex items-center gap-2">
-                      <Calendar class="w-4 h-4" />
-                      {{ formatDate(submission.created_at) }}
-                    </span>
-                  </CardDescription>
-                </div>
-                <component 
-                  :is="getStatusStyle(submission.status).icon" 
-                  class="w-5 h-5"
-                  :class="getStatusStyle(submission.status).text"
-                />
-              </div>
+        <!-- Stats Cards -->
+        <div class="grid auto-rows-min gap-4 md:grid-cols-3 mb-4">
+          <Card class="border-sidebar-border/70 dark:border-sidebar-border">
+            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle class="text-sm font-medium">Total Submissions</CardTitle>
+              <FileText class="h-4 w-4 text-muted-foreground" />
             </CardHeader>
+            <CardContent>
+              <div class="text-2xl font-bold">{{ submissions.length }}</div>
+              <p class="text-xs text-muted-foreground">
+                All responses
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card class="border-sidebar-border/70 dark:border-sidebar-border">
+            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle class="text-sm font-medium">Completed</CardTitle>
+              <CheckCircle2 class="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div class="text-2xl font-bold">{{ completedCount }}</div>
+              <p class="text-xs text-muted-foreground">
+                Fully submitted
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card class="border-sidebar-border/70 dark:border-sidebar-border">
+            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle class="text-sm font-medium">In Progress</CardTitle>
+              <Clock class="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div class="text-2xl font-bold">{{ incompleteCount }}</div>
+              <p class="text-xs text-muted-foreground">
+                Incomplete forms
+              </p>
+            </CardContent>
           </Card>
         </div>
 
-        <!-- Table View -->
-        <div v-else class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead class="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">
-                    ID
-                  </th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Submitter
-                  </th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th 
-                    v-for="field in allFields" 
-                    :key="field.id"
-                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider min-w-[200px]"
-                  >
-                    <div class="flex flex-col">
-                      <span>{{ field.label }}</span>
-                      <span class="text-gray-500 font-normal normal-case text-xs">{{ field.sectionTitle }}</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr 
-                  v-for="submission in submissions" 
-                  :key="submission.id"
-                  class="hover:bg-gray-50 cursor-pointer"
-                  @click="viewSubmission(submission)"
+        <!-- Submissions List -->
+        <div class="relative flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-card">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-2xl font-bold">Submissions</h2>
+                <p class="text-sm text-muted-foreground">All responses to this form</p>
+              </div>
+              
+              <!-- View Toggle -->
+              <div v-if="submissions.length > 0" class="flex gap-2">
+                <Button
+                  :variant="viewMode === 'cards' ? 'default' : 'outline'"
+                  size="sm"
+                  @click="viewMode = 'cards'"
                 >
-                  <td class="px-4 py-3 text-sm font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-gray-50">
-                    #{{ submission.id }}
-                  </td>
-                  <td class="px-4 py-3 text-sm text-gray-900">
-                    {{ getSubmitterName(submission) }}
-                  </td>
-                  <td class="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
-                    {{ formatDateShort(submission.created_at) }}
-                  </td>
-                  <td class="px-4 py-3 text-sm">
-                    <Badge 
-                      :class="`${getStatusStyle(submission.status).bg} ${getStatusStyle(submission.status).text}`"
-                    >
-                      {{ submission.status }}
-                    </Badge>
-                  </td>
-                  <td 
-                    v-for="field in allFields" 
-                    :key="field.id"
-                    class="px-4 py-3 text-sm text-gray-900"
-                  >
-                    <div class="max-w-xs truncate" :title="getAnswer(submission, field.id)">
-                      {{ getAnswer(submission, field.id) }}
+                  <LayoutGrid class="w-4 h-4 mr-2" />
+                  Cards
+                </Button>
+                <Button
+                  :variant="viewMode === 'table' ? 'default' : 'outline'"
+                  size="sm"
+                  @click="viewMode = 'table'"
+                >
+                  <Table class="w-4 h-4 mr-2" />
+                  Table
+                </Button>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-if="submissions.length === 0" class="text-center py-16">
+              <div class="w-20 h-20 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                <XCircle class="w-10 h-10 text-muted-foreground" />
+              </div>
+              <h3 class="text-xl font-semibold mb-2">No Submissions Yet</h3>
+              <p class="text-muted-foreground">This form hasn't received any submissions yet.</p>
+            </div>
+
+            <!-- Card View -->
+            <div v-else-if="viewMode === 'cards'" class="space-y-3">
+              <Card 
+                v-for="submission in submissions" 
+                :key="submission.id"
+                class="hover:shadow-md transition-shadow cursor-pointer"
+                @click="viewSubmission(submission)"
+              >
+                <CardHeader class="pb-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Users :size="18" class="text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle class="text-base">
+                          {{ getSubmitterName(submission) }}
+                        </CardTitle>
+                        <CardDescription class="text-xs">
+                          Submission #{{ submission.id }}
+                        </CardDescription>
+                      </div>
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    <div class="flex items-center gap-3">
+                      <Badge :class="getStatusStyle(submission.status)">
+                        {{ submission.status }}
+                      </Badge>
+                      <span class="text-xs text-muted-foreground">
+                        {{ formatDateTime(submission.created_at) }}
+                      </span>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            </div>
+
+            <!-- Table View -->
+            <div v-else class="rounded-lg border border-sidebar-border/70 overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-muted/50 border-b border-sidebar-border/70">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        ID
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Submitter
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th 
+                        v-for="field in allFields" 
+                        :key="field.id"
+                        class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[200px]"
+                      >
+                        <div class="flex flex-col">
+                          <span>{{ field.label }}</span>
+                          <span class="text-muted-foreground/70 font-normal normal-case text-xs">{{ field.sectionTitle }}</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-sidebar-border/70">
+                    <tr 
+                      v-for="submission in submissions" 
+                      :key="submission.id"
+                      class="hover:bg-muted/50 cursor-pointer transition-colors"
+                      @click="viewSubmission(submission)"
+                    >
+                      <td class="px-4 py-3 text-sm font-medium">
+                        #{{ submission.id }}
+                      </td>
+                      <td class="px-4 py-3 text-sm">
+                        {{ getSubmitterName(submission) }}
+                      </td>
+                      <td class="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
+                        {{ formatDateShort(submission.created_at) }}
+                      </td>
+                      <td class="px-4 py-3 text-sm">
+                        <Badge :class="getStatusStyle(submission.status)">
+                          {{ submission.status }}
+                        </Badge>
+                      </td>
+                      <td 
+                        v-for="field in allFields" 
+                        :key="field.id"
+                        class="px-4 py-3 text-sm"
+                      >
+                        <div class="max-w-xs truncate" :title="getAnswer(submission, field.id)">
+                          {{ getAnswer(submission, field.id) }}
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Detail View -->
-      <div v-else>
-        <Card>
-          <CardHeader>
-            <div class="flex items-start justify-between mb-4">
-              <div>
-                <div class="flex items-center gap-3 mb-2">
-                  <CardTitle class="text-2xl">
-                    Submission #{{ selectedSubmission.id }}
-                  </CardTitle>
-                  <Badge 
-                    :class="`${getStatusStyle(selectedSubmission.status).bg} ${getStatusStyle(selectedSubmission.status).text}`"
-                  >
-                    {{ selectedSubmission.status }}
-                  </Badge>
-                </div>
-                <CardDescription class="flex flex-col gap-1">
-                  <span v-if="selectedSubmission.user" class="flex items-center gap-2">
-                    <User class="w-4 h-4" />
-                    {{ selectedSubmission.user.name }} ({{ selectedSubmission.user.email }})
-                  </span>
-                  <span v-else-if="selectedSubmission.email" class="flex items-center gap-2">
-                    <User class="w-4 h-4" />
-                    {{ selectedSubmission.email }}
-                  </span>
-                  <span class="flex items-center gap-2">
-                    <Calendar class="w-4 h-4" />
-                    Submitted: {{ formatDate(selectedSubmission.created_at) }}
-                  </span>
-                </CardDescription>
+      <div v-else class="relative flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-card">
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-6">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <h2 class="text-2xl font-bold">Submission #{{ selectedSubmission.id }}</h2>
+                <Badge :class="getStatusStyle(selectedSubmission.status)">
+                  {{ selectedSubmission.status }}
+                </Badge>
+              </div>
+              <div class="flex flex-col gap-1 text-sm text-muted-foreground">
+                <span v-if="selectedSubmission.user" class="flex items-center gap-2">
+                  <User class="w-4 h-4" />
+                  {{ selectedSubmission.user.name }} ({{ selectedSubmission.user.email }})
+                </span>
+                <span v-else-if="selectedSubmission.email" class="flex items-center gap-2">
+                  <User class="w-4 h-4" />
+                  {{ selectedSubmission.email }}
+                </span>
+                <span class="flex items-center gap-2">
+                  <Calendar class="w-4 h-4" />
+                  {{ formatDateTime(selectedSubmission.created_at) }}
+                </span>
               </div>
             </div>
-          </CardHeader>
+            <Button @click="backToList" variant="outline" class="gap-2">
+              <List class="w-4 h-4" />
+              All Submissions
+            </Button>
+          </div>
 
-          <CardContent>
-            <div class="space-y-8">
-              <!-- Iterate through sections -->
-              <div 
-                v-for="(section, sectionIndex) in data" 
-                :key="section.id ?? sectionIndex"
-                class="space-y-4"
-              >
-                <!-- Section Header -->
+          <div class="space-y-8">
+            <!-- Iterate through sections -->
+            <div 
+              v-for="(section, sectionIndex) in data" 
+              :key="section.id ?? sectionIndex"
+              class="space-y-4"
+            >
+              <!-- Section Header -->
+              <div class="border-l-4 pl-4 py-2 border-primary">
+                <h3 class="text-xl font-semibold">{{ section.title }}</h3>
+                <p v-if="section.description" class="text-sm text-muted-foreground mt-1">
+                  {{ section.description }}
+                </p>
+              </div>
+
+              <!-- Fields and Answers -->
+              <div class="ml-4 space-y-4">
                 <div 
-                  class="border-l-4 pl-4 py-2"
-                  :style="{ borderColor: form_primary_color }"
+                  v-for="field in section.fields" 
+                  :key="field.id"
+                  class="border-b border-sidebar-border/70 pb-4 last:border-0"
                 >
-                  <h3 class="text-xl font-semibold text-gray-900">
-                    {{ section.title }}
-                  </h3>
-                  <p v-if="section.description" class="text-sm text-gray-600 mt-1">
-                    {{ section.description }}
-                  </p>
-                </div>
-
-                <!-- Fields and Answers -->
-                <div class="ml-4 space-y-4">
-                  <div 
-                    v-for="field in section.fields" 
-                    :key="field.id"
-                    class="border-b border-gray-200 pb-4 last:border-0"
-                  >
-                    <div class="flex items-start justify-between gap-4">
-                      <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                          {{ field.label }}
-                          <span v-if="field.required" class="text-red-500 ml-1">*</span>
-                        </label>
-                        <div class="text-gray-900">
-                          {{ formatAnswer(
-                            selectedSubmission.submissionFields?.find(sf => sf.form_field_id === field.id)?.answer,
-                            field.id
-                          ) }}
-                        </div>
+                  <div class="flex items-start justify-between gap-4">
+                    <div class="flex-1">
+                      <label class="block text-sm font-medium mb-2">
+                        {{ field.label }}
+                        <span v-if="field.required" class="text-destructive ml-1">*</span>
+                      </label>
+                      <div class="text-sm">
+                        {{ formatAnswer(
+                          selectedSubmission.submissionFields?.find(sf => sf.form_field_id === field.id)?.answer,
+                          field.id
+                        ) }}
                       </div>
-                      <Badge variant="outline" class="text-xs">
-                        {{ field.type }}
-                      </Badge>
                     </div>
+                    <Badge variant="outline" class="text-xs">
+                      {{ field.type }}
+                    </Badge>
                   </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </AppLayout>
 </template>

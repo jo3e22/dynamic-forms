@@ -21,7 +21,6 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { urlIsActive } from '@/lib/utils';
-import { dashboard } from '@/routes';
 import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, FileText, ChevronRight } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -51,7 +50,7 @@ const footerNavItems = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link href="/dashboard">
+                        <Link href="/forms">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>
@@ -72,7 +71,7 @@ const footerNavItems = [
                         <SidebarMenuItem>
                             <CollapsibleTrigger as-child>
                                 <SidebarMenuButton
-                                    :is-active="urlIsActive('/dashboard', page.url) || urlIsActive('/forms', page.url)"
+                                    :is-active="urlIsActive('/forms', page.url)"
                                     :tooltip="'Forms'"
                                 >
                                     <FileText />

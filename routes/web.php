@@ -12,8 +12,13 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-// Dashboard shows all forms
-Route::get('dashboard', [FormController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+// Forms index (main dashboard)
+Route::get('/forms', [FormController::class, 'index'])->middleware(['auth', 'verified'])->name('forms.index');
+
+// Keep dashboard as alias for backwards compatibility
+Route::get('dashboard', function () {
+    return redirect('/forms');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 // Individual form dashboard
 Route::get('/forms/{form}', [FormController::class, 'show'])->name('forms.show');

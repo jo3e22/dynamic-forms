@@ -25,7 +25,21 @@ class FormController extends Controller
 
     public function index()
     {
-        $forms = Auth::user()->forms()->withCount('submissions')->latest()->get();
+        $forms = Auth::user()->forms()
+            ->with('sections:id,form_id,title,section_order')
+            ->withCount('submissions')
+            ->latest()
+            ->get()
+            ->map(function($form) {
+                return [
+                    'id' => $form->id,
+                    'code' => $form->code,
+                    'status' => $form->status,
+                    'title' => $form->title, // Uses the accessor
+                    'created_at' => $form->created_at,
+                    'submissions_count' => $form->submissions_count,
+                ];
+            });
         
         return Inertia::render('Dashboard', [
             'forms' => $forms,

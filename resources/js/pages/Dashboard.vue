@@ -25,8 +25,8 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Dashboard',
-        href: dashboard().url,
+        title: 'Forms',
+        href: '/forms',
     },
 ];
 
