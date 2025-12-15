@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { FileText, Edit, BarChart3 } from 'lucide-vue-next';
+import { Edit, BarChart3 } from 'lucide-vue-next';
+import AppLogoIcon from '@/components/AppLogoIcon.vue';
 </script>
 
 <template>
@@ -11,8 +12,10 @@ import { FileText, Edit, BarChart3 } from 'lucide-vue-next';
     <!-- Navigation -->
     <nav class="border-b">
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <FileText class="w-6 h-6 text-blue-600" />
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
+            <AppLogoIcon class="w-5 h-5 text-white" />
+          </div>
           <div class="flex flex-col">
             <span class="text-xl font-semibold leading-tight">Dynamic Forms</span>
             <span class="text-xs text-gray-500">by jdev.ie</span>
@@ -79,7 +82,7 @@ import { FileText, Edit, BarChart3 } from 'lucide-vue-next';
           
           <div>
             <div class="w-10 h-10 bg-blue-100 rounded flex items-center justify-center mb-4">
-              <FileText class="w-5 h-5 text-blue-600" />
+              <AppLogoIcon class="w-5 h-5 text-blue-600" />
             </div>
             <h3 class="font-semibold mb-2">Collect responses</h3>
             <p class="text-gray-600">Share your forms and gather submissions</p>
@@ -101,7 +104,7 @@ import { FileText, Edit, BarChart3 } from 'lucide-vue-next';
       <div class="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-gray-600">
         <span>© 2025 jdev.ie</span>
         <div class="flex items-center gap-2">
-          <FileText class="w-4 h-4" />
+          <AppLogoIcon class="w-4 h-4" />
           <span>Dynamic Forms</span>
         </div>
       </div>
