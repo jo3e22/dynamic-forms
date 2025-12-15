@@ -4,6 +4,10 @@ import type { FieldComponentProps } from '@/types/forms';
 
 const props = defineProps<FieldComponentProps>();
 
+const emit = defineEmits<{
+  'update:modelValue': [value: string];
+}>();
+
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
 function adjustHeight() {
@@ -11,6 +15,12 @@ function adjustHeight() {
   if (!el) return;
   el.style.height = 'auto';
   el.style.height = `${el.scrollHeight}px`;
+}
+
+function handleInput(event: Event) {
+  const target = event.target as HTMLTextAreaElement;
+  emit('update:modelValue', target.value);
+  adjustHeight();
 }
 
 onMounted(() => {
@@ -32,11 +42,16 @@ onMounted(() => {
     <textarea
       v-else
       ref="textareaRef"
-      rows="3"
+      :value="submissionField?.answer"
+      @input="handleInput"
+      rows="4"
       placeholder="Your answer"
-      class="w-full py-2 text-sm border-b-2 border-gray-300 focus:outline-none focus:border-current transition-colors resize-none"
-      :style="{ borderColor: form_primary_color }"
-      @input="adjustHeight"
+      :required="field.required"
+      class="w-full py-2 px-3 text-base border-2 rounded-md focus:outline-none focus:ring-2 transition-colors resize-none"
+      :style="{ 
+        borderColor: form_primary_color,
+        '--tw-ring-color': form_primary_color 
+      }"
     />
   </div>
 </template>

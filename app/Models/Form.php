@@ -50,7 +50,7 @@ class Form extends Model
 
     public function submissions()
     {
-        return $this->hasMany(FormSubmission::class);
+        return $this->hasMany(Submission::class);
     }
 
     public function getTitleAttribute($value)

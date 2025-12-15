@@ -1,172 +1,178 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-vue-next';
+import type { FormDTO, FormBuilderData, SubmissionDTO } from '@/types';
+import { getFieldComponent } from '@/components/form-builder/fields';
+
+interface Props {
+  form: FormDTO;
+  data: FormBuilderData;
+  submission: SubmissionDTO;
+  submissionFields: any[];
+}
+
+const props = defineProps<Props>();
+const page = usePage();
+
+// Form colors
+const form_primary_color = props.form.primary_color ?? '#3B82F6';
+const form_secondary_color = props.form.secondary_color ?? '#EFF6FF';
+
+// Create a map of field answers
+const answers = ref<Record<number, any>>({});
+
+// Initialize answers from existing submission fields
+props.submissionFields.forEach((sf) => {
+  if (sf.form_field_id && sf.answer) {
+    try {
+      answers.value[sf.form_field_id] = JSON.parse(sf.answer);
+    } catch {
+      answers.value[sf.form_field_id] = sf.answer;
+    }
+  }
+});
+
+// Form validation errors
+const errors = computed(() => (page.props.errors as any) ?? {});
+
+function getFieldError(fieldId: number): string | undefined {
+  return errors.value[`fields.${fieldId}`];
+}
+
+function hasFieldError(fieldId: number): boolean {
+  return !!getFieldError(fieldId);
+}
+
+// Submit form
+function submitForm() {
+  // Convert answers to submission fields format
+  const submissionFieldsData = Object.entries(answers.value).map(([fieldId, answer]) => {
+    const existingField = props.submissionFields.find(sf => sf.form_field_id === Number(fieldId));
+    
+    return {
+      id: existingField?.id ?? null,
+      form_field_id: Number(fieldId),
+      submission_id: props.submission.id,
+      answer: typeof answer === 'string' ? answer : JSON.stringify(answer),
+    };
+  });
+
+  router.put(`/forms/${props.form.code}/viewform/${props.submission.code}`, {
+    submissionFields: submissionFieldsData,
+  }, {
+    preserveScroll: true,
+    onSuccess: () => {
+      console.log('Form submitted successfully');
+    },
+    onError: (errors) => {
+      console.error('Submission errors:', errors);
+    },
+  });
+}
+
+function goBack() {
+  router.visit('/forms');
+}
+</script>
+
 <template>
-  <div :style="{ backgroundColor: form_secondary_color }" class="min-h-screen py-8">
-
-    <main class="mx-auto w-[70%] p-6 ">
-      <!-- Title and Description -->
-      <div class="mb-6 rounded-md shadow bg-white">
-        <div :style="{ backgroundColor: form_primary_color }" class="h-3 w-full rounded-t-md"></div>
-
-        <div class=" px-6 pt-3 pb-6 space-y-3 ">
-          <div
-            placeholder="Form Title"
-            class="mt-2 block w-full text-4xl border-b-1 focus:border-b-2 focus:outline-none"
-            :style="{
-              '--tw-border-opacity': '1',
-              borderColor: 'transparent',
-            }"
-          >
-            {{ form.title }}
-          </div>
-          <div
-            id="descriptionTextarea"
-            placeholder="Form Description"
-            class=" block w-full border-b-2 focus:outline-none resize-none overflow-hidden"
-            :class="[
-                'w-full border',
-            ]"
-            :style="{
-            '--tw-border-opacity': '1',
-            borderTop: 'none',
-            borderLeft: 'none',
-            borderRight: 'none',
-            borderColor: 'transparent',
-            backgroundColor: 'transparent',
-            }"
-            @input="adjustTextareaHeight"
-          >
-            {{ form.description }}
-          </div>
-        </div>
-      </div>
-
-
-
-
-
-      <!-- Questions Section -->
-      <div class="space-y-4">
-        <div v-for="(field, index) in fields"
-        :key="index"
+  <div 
+    :style="{ backgroundColor: form_secondary_color }" 
+    class="min-h-screen"
+  >
+    <!-- Header -->
+    <header class="bg-white shadow-sm px-6 py-4 sticky top-0 z-10">
+      <div class="max-w-4xl mx-auto flex items-center justify-between">
+        <button 
+          @click="goBack"
+          class="flex items-center gap-2 text-gray-600 hover:text-gray-800"
         >
-          <QuestionRenderer
-            :field="field"
-            :index="index"
-            :submissionField="submissionFields[index]"
-            :mode="'view'"
-            :form-colors="formColors"
-          />
+          <ArrowLeft :size="20" />
+          <span>Back</span>
+        </button>
+        
+        <Button
+          @click="submitForm"
+          :style="{ backgroundColor: form_primary_color }"
+          class="hover:opacity-90"
+        >
+          Submit Form
+        </Button>
+      </div>
+    </header>
 
+    <!-- Form Content -->
+    <main class="max-w-4xl mx-auto px-6 py-8">
+      <div 
+        v-for="(section, sIdx) in data" 
+        :key="section.id ?? sIdx"
+        class="mb-12"
+      >
+        <!-- Section Header -->
+        <div class="bg-white rounded-lg p-8 mb-6 shadow-sm">
+          <h1 
+            v-if="section.title"
+            class="text-4xl font-bold mb-2"
+            :style="{ color: form_primary_color }"
+          >
+            {{ section.title }}
+          </h1>
+          <p 
+            v-if="section.description" 
+            class="text-gray-600 text-lg"
+          >
+            {{ section.description }}
+          </p>
         </div>
 
-        <!-- Add field button -->
-        <button @click="submitForm" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-          Submit
-        </button>
+        <!-- Fields -->
+        <div class="space-y-6">
+          <div
+            v-for="(field, fIdx) in section.fields"
+            :key="field.id ?? fIdx"
+            class="bg-white rounded-lg p-6 shadow-sm"
+            :class="hasFieldError(field.id!) ? 'ring-2 ring-red-500' : ''"
+          >
+            <!-- Question Label -->
+            <div class="mb-4">
+              <label class="block text-lg font-medium text-gray-900">
+                {{ field.label }}
+                <span v-if="field.required" class="text-red-500 ml-1">*</span>
+              </label>
+            </div>
 
+            <!-- Field Error -->
+            <p v-if="hasFieldError(field.id!)" class="text-sm text-red-600 mb-3">
+              {{ getFieldError(field.id!) }}
+            </p>
+
+            <!-- Field Input Component -->
+            <component
+              :is="getFieldComponent(field.type)"
+              :field="field"
+              :submissionField="{ answer: answers[field.id!] }"
+              mode="fill"
+              :form_primary_color="form_primary_color"
+              :form_secondary_color="form_secondary_color"
+              v-model="answers[field.id!]"
+            />
+          </div>
+        </div>
       </div>
-      <div v-if="showSuccess" class="success-message">
-        {{ page.props.flash.success }}
+
+      <!-- Submit Button (bottom) -->
+      <div class="flex justify-center pt-8">
+        <Button
+          @click="submitForm"
+          size="lg"
+          :style="{ backgroundColor: form_primary_color }"
+          class="hover:opacity-90 px-12"
+        >
+          Submit Form
+        </Button>
       </div>
     </main>
   </div>
 </template>
-
-<script setup>
-import { ref, watch, reactive, onMounted, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
-import { usePage } from '@inertiajs/vue3';
-import QuestionRenderer from '@/components/QuestionRenderer.vue';
-
-const props = defineProps({
-  form: Object,
-  fields: Array,
-  submission: Object,
-  submissionFields: Array
-});
-
-const form = ref({ ...props.form });
-const fields = ref([...props.fields]);
-const submission = ref({ ...props.submission });
-const submissionFields = ref([...props.submissionFields]);
-
-fields.value[0].type = 'textarea';
-
-console.log('Form:', form.value);
-console.log('Fields:', fields.value);
-console.log('submissionFields:', submissionFields.value);
-
-const page = usePage();
-const showSuccess = ref(false);
-
-const formColors = reactive({
-  primary: 'rgb(120, 110, 127)', // purple-500
-  secondary: 'rgb(255, 255, 255)', // purple-600
-  background: 'rgb(240, 220, 255)', // blue-500
-  white: 'rgb(255, 255, 255)', // white
-  gray: 'rgb(243, 244, 246)', // gray-100
-  success: 'rgb(16, 185, 129)', // green-500
-  danger: 'rgb(239, 68, 68)', // red-500
-  warning: 'rgb(245, 158, 11)', // yellow-500
-  info: 'rgb(96, 165, 250)', // blue-300
-});
-
-// Reactive color fallbacks
-const form_primary_color = computed(() => {
-  const c = form.value?.primary_color;
-  return c && String(c).trim() ? c : '#9e0d06';
-});
-const form_secondary_color = computed(() => {
-  const c = form.value?.secondary_color;
-  return c && String(c).trim() ? c : '#454488';
-});
-
-
-
-
-
-function submitForm() {
-  try {
-    console.log('Submit button clicked');
-    console.log('Submitting submissionFields:', submissionFields.value);
-    
-    router.put(`/forms/${form.value.code}/viewform/${submission.value.code}`, {
-      submissionFields: submissionFields.value
-    }, {
-      onSuccess: () => {
-        console.log('Form submitted!');
-        showSuccess.value = true;
-        // Show toast here
-      },
-      onError: (errors) => {
-        console.error('Validation failed:', errors);
-      }
-    }
-    )
-  }
-  catch (error) {
-    console.error('An error occurred while submitting the form:', error);
-  }
-}
-
-
-
-
-
-const descriptionTextarea = ref(null);
-
-function adjustTextareaHeight() {
-  const textarea = document.getElementById('descriptionTextarea'); // Access the textarea using its id
-  if (textarea) {
-    textarea.style.height = 'auto'; // Reset height to auto to calculate the new height
-    textarea.offsetHeight; // This line forces the browser to recalculate layout
-    textarea.style.height = `${textarea.scrollHeight}px`; // Set the height to match the content
-    console.log('Adjusted height:', textarea.style.height); // Debugging log
-  }
-}
-
-// Adjust height on mount
-onMounted(() => {
-  adjustTextareaHeight();
-});
-
-</script>

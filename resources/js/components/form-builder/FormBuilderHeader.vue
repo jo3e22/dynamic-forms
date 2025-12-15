@@ -45,6 +45,10 @@ function shareForm() {
     });
 }
 
+function viewSubmissions() {
+  router.visit(`/forms/${props.form.code}/submissions`);
+}
+
 function deleteForm() {
     if (confirm('Are you sure you want to delete this form? This action cannot be undone.')) {
         router.delete(`/forms/${props.form.code}`, {
@@ -138,6 +142,16 @@ function tempPrint() {
             >
                 <Share2 :size="16" />
                 Share
+            </Button>
+
+            <Button
+                @click="viewSubmissions"
+                variant="outline"
+                size="sm"
+                class="gap-2"
+            >
+                <Eye :size="16" />
+                Submissions
             </Button>
 
             <Button

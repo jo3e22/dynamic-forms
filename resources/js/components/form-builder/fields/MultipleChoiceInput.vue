@@ -5,6 +5,10 @@ import { Circle, Square, X } from 'lucide-vue-next';
 
 const props = defineProps<FieldComponentProps>();
 
+const emit = defineEmits<{
+  'update:modelValue': [value: string | string[]];
+}>();
+
 // Parse options safely
 const editableOptions = ref<string[]>(
   Array.isArray(props.field.options) 
@@ -25,7 +29,6 @@ const IconComponent = computed(() => {
 });
 
 function handleOptionEdit(index: number) {
-  // Update the field's options
   props.field.options = [...editableOptions.value];
 }
 
@@ -42,6 +45,35 @@ function removeOption(index: number) {
   }
   editableOptions.value.splice(index, 1);
   props.field.options = [...editableOptions.value];
+}
+
+// Handle fill mode interactions
+function handleRadioChange(option: string) {
+  emit('update:modelValue', option);
+}
+
+function handleCheckboxChange(option: string, checked: boolean) {
+  const current = Array.isArray(props.submissionField?.answer) 
+    ? [...props.submissionField.answer] 
+    : [];
+  
+  if (checked) {
+    current.push(option);
+  } else {
+    const index = current.indexOf(option);
+    if (index > -1) current.splice(index, 1);
+  }
+  
+  emit('update:modelValue', current);
+}
+
+function isChecked(option: string): boolean {
+  if (props.field.type === 'multiple-choice') {
+    return props.submissionField?.answer === option;
+  } else {
+    return Array.isArray(props.submissionField?.answer) && 
+           props.submissionField.answer.includes(option);
+  }
 }
 </script>
 
@@ -92,29 +124,60 @@ function removeOption(index: number) {
       </button>
     </div>
 
-    <!-- Preview/Fill Mode -->
-    <div v-else class="space-y-2">
+    <!-- Preview Mode -->
+    <div v-else-if="mode === 'preview'" class="space-y-2 pointer-events-none">
       <label 
         v-for="(option, index) in editableOptions" 
         :key="index"
-        class="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-50 cursor-pointer"
+        class="flex items-center gap-3 px-3 py-2 rounded"
       >
         <input
           v-if="field.type === 'multiple-choice'"
           type="radio"
-          :name="`field-${field.id}`"
-          :value="option"
+          disabled
           class="w-4 h-4"
           :style="{ accentColor: form_primary_color }"
         />
         <input
           v-else
           type="checkbox"
-          :value="option"
+          disabled
           class="w-4 h-4"
           :style="{ accentColor: form_primary_color }"
         />
         <span class="text-sm">{{ option }}</span>
+      </label>
+    </div>
+
+    <!-- Fill Mode -->
+    <div v-else class="space-y-2">
+      <label 
+        v-for="(option, index) in editableOptions" 
+        :key="index"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all cursor-pointer hover:bg-gray-50"
+        :class="isChecked(option) ? 'border-current bg-blue-50' : 'border-gray-200'"
+        :style="isChecked(option) ? { borderColor: form_primary_color, backgroundColor: `${form_primary_color}10` } : {}"
+      >
+        <input
+          v-if="field.type === 'multiple-choice'"
+          type="radio"
+          :name="`field-${field.id}`"
+          :value="option"
+          :checked="isChecked(option)"
+          @change="handleRadioChange(option)"
+          class="w-5 h-5"
+          :style="{ accentColor: form_primary_color }"
+        />
+        <input
+          v-else
+          type="checkbox"
+          :value="option"
+          :checked="isChecked(option)"
+          @change="(e) => handleCheckboxChange(option, (e.target as HTMLInputElement).checked)"
+          class="w-5 h-5"
+          :style="{ accentColor: form_primary_color }"
+        />
+        <span class="text-base">{{ option }}</span>
       </label>
     </div>
   </div>

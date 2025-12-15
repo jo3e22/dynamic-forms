@@ -11,6 +11,10 @@ class SubmissionField extends Model
 
     protected $fillable = ['submission_id', 'form_field_id', 'answer'];
 
+    protected $casts = [
+        'answer' => 'json',
+    ];
+
     public function submission()
     {
         return $this->belongsTo(Submission::class);

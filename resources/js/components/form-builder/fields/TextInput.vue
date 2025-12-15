@@ -3,9 +3,18 @@ import type { FieldComponentProps } from '@/types/forms';
 
 const props = defineProps<FieldComponentProps>();
 
+const emit = defineEmits<{
+  'update:modelValue': [value: string];
+}>();
+
 const placeholderText = props.field.type === 'email' 
   ? 'Email address' 
   : 'Short answer text';
+
+function handleInput(event: Event) {
+  const target = event.target as HTMLInputElement;
+  emit('update:modelValue', target.value);
+}
 </script>
 
 <template>
@@ -20,10 +29,16 @@ const placeholderText = props.field.type === 'email'
     
     <input
       v-else
-      type="text"
+      :type="field.type === 'email' ? 'email' : 'text'"
+      :value="submissionField?.answer"
+      @input="handleInput"
       :placeholder="placeholderText"
-      class="w-full py-2 text-sm border-b-2 border-gray-300 focus:outline-none focus:border-current transition-colors"
-      :style="{ borderColor: form_primary_color }"
+      :required="field.required"
+      class="w-full py-2 px-3 text-base border-2 rounded-md focus:outline-none focus:ring-2 transition-colors"
+      :style="{ 
+        borderColor: form_primary_color,
+        '--tw-ring-color': form_primary_color 
+      }"
     />
   </div>
 </template>

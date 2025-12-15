@@ -5,88 +5,105 @@ namespace App\Http\Controllers\Form;
 use Auth;
 use Inertia\Inertia;
 use App\Models\Form;
-use App\Models\FormField;
 use App\Models\Submission;
-use Illuminate\Support\Str;
+use App\Services\FormService;
+use App\Services\SubmissionService;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
 use Inertia\Response;
 
 class SubmissionController extends Controller
 {
-    public function create(Form $form)
+    public function __construct(
+        protected FormService $formService,
+        protected SubmissionService $submissionService
+    ) {}
+
+    public function index(Form $form): Response
     {
-        \Log::info('submission create method hit');
-        $current_user = Auth::user();
+        $data = $this->formService->buildFormData($form);
 
-        $submission = new Submission();
-        $submission->generateCode();
-        $submission->status = Submission::STATUS_DRAFT;
-        $submission->form()->associate($form);
-        $current_user->Submissions()->save($submission);
+        $submissions = $form->submissions()
+            ->with(['user', 'submissionFields'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($submission) => $this->submissionService->formatSubmissionData($submission));
 
-        \Log::info('create method finished', $submission->toArray());
-        return $submission;
+        return Inertia::render('forms/SubmissionViewer', [
+            'form' => [
+                'id' => $form->id,
+                'code' => $form->code,
+                'status' => $form->status,
+                'primary_color' => $form->primary_color,
+                'secondary_color' => $form->secondary_color,
+            ],
+            'data' => $data,
+            'submissions' => $submissions,
+        ]);
+    }
+
+    public function show(Form $form, Submission $submission): Response
+    {
+        $data = $this->formService->buildFormData($form);
+
+        $submissions = $form->submissions()
+            ->with(['user', 'submissionFields'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($sub) => [
+                'id' => $sub->id,
+                'code' => $sub->code,
+                'status' => $sub->status,
+                'user_id' => $sub->user_id,
+                'email' => $sub->email,
+                'created_at' => $sub->created_at,
+                'updated_at' => $sub->updated_at,
+                'user' => $sub->user ? [
+                    'id' => $sub->user->id,
+                    'name' => $sub->user->name,
+                    'email' => $sub->user->email,
+                ] : null,
+            ]);
+
+        $selectedSubmission = $this->submissionService->formatSubmissionData($submission);
+
+        return Inertia::render('forms/SubmissionViewer', [
+            'form' => [
+                'id' => $form->id,
+                'code' => $form->code,
+                'status' => $form->status,
+                'primary_color' => $form->primary_color,
+                'secondary_color' => $form->secondary_color,
+            ],
+            'data' => $data,
+            'submissions' => $submissions,
+            'selectedSubmission' => $selectedSubmission,
+        ]);
     }
 
     public function submit(Request $request, Form $form, Submission $submission): Response
     {
-        \Log::info('submit method hit', $request->all());
-
-        $request->validate([
-            'submissionFields' => 'present|array'
+        $validated = $request->validate([
+            'submissionFields' => 'required|array',
+            'submissionFields.*.id' => 'nullable|integer|exists:submission_fields,id',
+            'submissionFields.*.form_field_id' => 'required|integer|exists:form_fields,id',
+            'submissionFields.*.submission_id' => 'required|integer',
+            'submissionFields.*.answer' => 'nullable',
         ]);
-        \Log::info('Submit validate passed', $request->all());
-        \Log::info('request->submissionFields', $request->submissionFields);
-        \Log::info('submission before processing fields', $submission->toArray());
-    
-        $existingSubmissionFieldIds = [];
-    
-        foreach ($request->submissionFields as $submissionFieldData) {
-            \Log::info('Processing submissionField data', $submissionFieldData);
-            if (isset($submissionFieldData['id'])) {
-                // Update existing field
-                $submissionField = $submission->submissionFields()->find($submissionFieldData['id']);
-                if ($submissionField) {
-                    $submissionField->update([
-                        'answer' => $submissionFieldData['answer'], // Ensure the value is JSON-encoded
-                    ]);
-                    \Log::info('Updated existing submissionField', $submissionField->toArray());
-                    $existingSubmissionFieldIds[] = $submissionField->id;
-                } else {
-                    \Log::warning('SubmissionField not found for update', ['id' => $submissionFieldData['id']]);
-                }
-            } else {
-                // Create new field
-                $newsubmissionField = $submission->submissionFields()->create([
-                    'submissionField' => $submissionFieldData['submissionField']['answer'],
-                ]);
-                \Log::info('Created new submissionField', $newsubmissionField->toArray());
-                $existingSubmissionFieldIds[] = $newsubmissionField->id;
-            }
-        }
-        \Log::info('Update fields passed');
-    
-        // Optionally delete fields that were removed in the frontend
-        $submission->submissionFields()->whereNotIn('id', $existingSubmissionFieldIds)->delete();
-        \Log::info('Update deletefields passed');
-    
-        //return back()->with('success', 'Form updated successfully.');
-        //return back()->with('success', __('A reset link will be sent if the account exists.'));
-        //return redirect()->route('forms.edit', $form->code)->with('success', 'Form updated successfully.');
-        \Log::info('Submit method finished');
-        return Inertia::render('forms/DynamicForm', [
-            'form' => $form,
-            'fields' => $form->fields,
-            'submission' => $submission,
-            'submissionFields' => $submission->submissionFields,
-            'flash' => [
-                'success' => 'Form updated successfully.',
+
+        $this->submissionService->saveSubmissionFields($submission, $validated['submissionFields']);
+        $this->submissionService->markAsCompleted($submission);
+
+        $formTitle = $this->formService->getFormTitle($form);
+
+        return Inertia::render('forms/SubmissionSuccess', [
+            'form' => [
+                'id' => $form->id,
+                'code' => $form->code,
+                'primary_color' => $form->primary_color,
+                'secondary_color' => $form->secondary_color,
             ],
+            'formTitle' => $formTitle,
         ]);
-
     }
-    
-
 }

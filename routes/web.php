@@ -26,18 +26,13 @@ Route::delete('/forms/{form}', [FormController::class, 'destroy'])->name('forms.
 // Form viewing and submission
 Route::get('/forms/{form}/viewform', [FormController::class, 'viewform'])->name('forms.viewform');
 Route::put('/forms/{form}/viewform/{submission}', [SubmissionController::class, 'submit'])->name('forms.createsubmission');
-Route::get('/forms/{form}/viewform/{submission}', [FormController::class, 'viewformsubmission'])->name('forms.viewformsubmission');
+
+// Submission viewing
+Route::get('/forms/{form}/submissions', [SubmissionController::class, 'index'])->name('submissions.index');
+Route::get('/forms/{form}/submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
 
 // JSON export (for debugging)
 Route::get('/forms/{form}/formjson', [FormController::class, 'jsonform'])->name('forms.json');
-
-Route::get('/forms/{form}', function (Form $form) {
-    return Inertia::render('DynamicForm', [
-        'formId' => $form->id,
-        'questions' => $form->fields,
-        'mode' => 'fill'
-    ]);
-})->name('forms.show');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

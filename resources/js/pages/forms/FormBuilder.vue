@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { useFormBuilder } from '@/composables';
 import type { FormBuilderProps, FieldType } from '@/types';
@@ -12,11 +12,15 @@ import {
   FieldOptionsbar,
 } from '@/components/form-builder';
 import { FIELD_COMPONENTS, getFieldComponent } from '@/components/form-builder/fields';
+import { Toast } from '@/components/ui/toast';
 
 const props = defineProps<FormBuilderProps>();
 
 const page = usePage();
 const showColorPicker = ref(false);
+
+const savedMessage = ref('');
+const toastKey = ref(0);
 
 // Initialize form builder composable
 const {
@@ -111,7 +115,11 @@ function saveForm() {
   }, {
     preserveScroll: true,
     onSuccess: () => {
-      console.log('Form saved successfully');
+      toastKey.value++; // Force toast to remount
+      savedMessage.value = 'Form saved successfully!';
+      setTimeout(() => {
+        savedMessage.value = '';
+      }, 3100);
     },
     onError: (errors) => {
       console.error('Save errors:', errors);
@@ -152,6 +160,8 @@ function tempPrint() {
 </script>
 
 <template>
+  <Toast v-if="savedMessage" :key="toastKey" :message="savedMessage" type="success" />
+
   <div 
     :style="{ backgroundColor: form_secondary_color }" 
     class="min-h-screen pb-46"
