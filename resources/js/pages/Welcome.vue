@@ -5,7 +5,7 @@ import { FileText, Edit, BarChart3 } from 'lucide-vue-next';
 </script>
 
 <template>
-  <Head title="Dynamic Forms" />
+  <Head title="Dynamic Forms - jdev.ie" />
   
   <div class="min-h-screen bg-white">
     <!-- Navigation -->
@@ -13,7 +13,10 @@ import { FileText, Edit, BarChart3 } from 'lucide-vue-next';
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <FileText class="w-6 h-6 text-blue-600" />
-          <span class="text-xl font-semibold">Dynamic Forms</span>
+          <div class="flex flex-col">
+            <span class="text-xl font-semibold leading-tight">Dynamic Forms</span>
+            <span class="text-xs text-gray-500">by jdev.ie</span>
+          </div>
         </div>
         
         <div class="flex items-center gap-3">
@@ -96,7 +99,7 @@ import { FileText, Edit, BarChart3 } from 'lucide-vue-next';
     <!-- Footer -->
     <footer class="border-t py-6">
       <div class="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-gray-600">
-        <span>© 2025 Dynamic Forms</span>
+        <span>© 2025 jdev.ie</span>
         <div class="flex items-center gap-2">
           <FileText class="w-4 h-4" />
           <span>Dynamic Forms</span>
