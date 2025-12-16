@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Organisation;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 use App\Models\Organisation\Organisation;
 use App\Services\OrganisationService;
@@ -13,6 +14,8 @@ use Illuminate\Http\RedirectResponse;
 
 class OrganisationController extends Controller
 {
+    use AuthorizesRequests;
+    
     public function __construct(
         protected OrganisationService $organisationService
     ) {}
@@ -30,9 +33,10 @@ class OrganisationController extends Controller
     {
         $this->authorize('create', Organisation::class);
 
-        return Inertia::render('organisations/Create');
+        return Inertia::render('admin/organisations/Create');
     }
 
+    /*
     public function store(Request $request): RedirectResponse
     {
         $this->authorize('create', Organisation::class);
@@ -49,6 +53,25 @@ class OrganisationController extends Controller
         $organisation = $this->organisationService->createOrganisation($validated, auth()->user());
 
         return redirect()->route('organisations.show', $organisation)
+            ->with('success', 'Organisation created successfully');
+    }
+    */
+    public function store(Request $request): RedirectResponse
+    {
+        $this->authorize('create', Organisation::class);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['nullable', 'string', 'max:255', 'unique:organisations,slug'],
+            'short_name' => ['nullable', 'string', 'max:100'],
+            'type' => ['required', 'string'],
+            'visibility' => ['required', 'string'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $organisation = $this->organisationService->createOrganisation($validated, auth()->user());
+
+        return redirect()->route('admin.organisations.index')
             ->with('success', 'Organisation created successfully');
     }
 
@@ -113,5 +136,26 @@ class OrganisationController extends Controller
 
         return redirect()->back()
             ->with('success', "Switched to {$organisation->name}");
+    }
+
+    public function adminIndex(): Response
+    {
+        $this->authorize('create', Organisation::class);
+
+        $organisations = Organisation::with(['owner', 'branding'])
+            ->withCount(['users', 'forms'])
+            ->get();
+
+        return Inertia::render('admin/organisations/Index', [
+            'organisations' => $organisations,
+        ]);
+    }
+
+    public function clearCurrent(): RedirectResponse
+    {
+        session()->forget('current_organisation_id');
+
+        return redirect()->back()
+            ->with('success', 'Switched to personal workspace');
     }
 }

@@ -2,6 +2,7 @@
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+require __DIR__.'/admin.php';
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -60,17 +61,20 @@ Route::post('/notifications/mark-all-read', [NotificationController::class, 'mar
 
 
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    // Organisations
-    Route::resource('organisations', OrganisationController::class);
-    Route::post('organisations/{organisation}/switch', [OrganisationController::class, 'switchCurrent'])
-        ->name('organisations.switch');
+// Regular user routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/organisations', [\App\Http\Controllers\Organisation\OrganisationController::class, 'index'])->name('organisations.index');
     
-    // Organisation members
-    Route::post('organisations/{organisation}/members', [OrganisationMemberController::class, 'store'])
-        ->name('organisations.members.store');
-    Route::put('organisations/{organisation}/members/{user}', [OrganisationMemberController::class, 'update'])
-        ->name('organisations.members.update');
-    Route::delete('organisations/{organisation}/members/{user}', [OrganisationMemberController::class, 'destroy'])
-        ->name('organisations.members.destroy');
+    // These specific routes MUST come before the dynamic {organisation} route
+    Route::post('/organisations/clear', [\App\Http\Controllers\Organisation\OrganisationController::class, 'clearCurrent'])->name('organisations.clear');
+    Route::post('/organisations/{organisation}/switch', [\App\Http\Controllers\Organisation\OrganisationController::class, 'switchCurrent'])->name('organisations.switch');
+    
+    Route::get('/organisations/{organisation}', [\App\Http\Controllers\Organisation\OrganisationController::class, 'show'])->name('organisations.show');
+    Route::get('/organisations/{organisation}/edit', [\App\Http\Controllers\Organisation\OrganisationController::class, 'edit'])->name('organisations.edit');
+    Route::put('/organisations/{organisation}', [\App\Http\Controllers\Organisation\OrganisationController::class, 'update'])->name('organisations.update');
+    
+    // Member management (org owners/admins)
+    Route::post('/organisations/{organisation}/members', [\App\Http\Controllers\Organisation\OrganisationMemberController::class, 'store'])->name('organisations.members.store');
+    Route::put('/organisations/{organisation}/members/{user}', [\App\Http\Controllers\Organisation\OrganisationMemberController::class, 'update'])->name('organisations.members.update');
+    Route::delete('/organisations/{organisation}/members/{user}', [\App\Http\Controllers\Organisation\OrganisationMemberController::class, 'destroy'])->name('organisations.members.destroy');
 });

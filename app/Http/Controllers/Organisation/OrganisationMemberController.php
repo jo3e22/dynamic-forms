@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Organisation;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 use App\Models\Organisation\Organisation;
 use App\Models\User;
 use App\Services\OrganisationService;
@@ -12,6 +14,8 @@ use Illuminate\Http\RedirectResponse;
 
 class OrganisationMemberController extends Controller
 {
+    use AuthorizesRequests;
+    
     public function __construct(
         protected OrganisationService $organisationService
     ) {}

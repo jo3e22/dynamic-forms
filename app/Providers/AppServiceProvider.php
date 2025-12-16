@@ -71,8 +71,8 @@ class AppServiceProvider extends ServiceProvider
                         ] : null,
                     ])
                 : [],
-            'currentOrganisation' => fn () => Auth::check()
-                ? Auth::user()->currentOrganisation()
+            'currentOrganisation' => fn () => Auth::check() && session('current_organisation_id')
+                ? Organisation::with('branding')->find(session('current_organisation_id'))
                 : null,
         ]);
     }

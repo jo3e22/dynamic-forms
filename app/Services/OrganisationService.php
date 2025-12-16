@@ -278,11 +278,13 @@ class OrganisationService
         ?User $causer,
         array $properties = []
     ): void {
-        activity()
-            ->performedOn($organisation)
-            ->causedBy($causer)
-            ->event($event)
-            ->withProperties($properties)
-            ->log($event);
+        activity()->log(
+            description: $event,
+            subject: $organisation,
+            causer: $causer,
+            event: $event,
+            properties: $properties,
+            logName: 'organisation'
+        );
     }
 }

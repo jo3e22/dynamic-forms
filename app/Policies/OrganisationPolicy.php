@@ -24,7 +24,7 @@ class OrganisationPolicy
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->is_admin;
     }
 
     public function update(User $user, Organisation $organisation): bool

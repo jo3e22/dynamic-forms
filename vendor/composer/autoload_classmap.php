@@ -29,6 +29,7 @@ return array(
     'App\\Http\\Controllers\\Settings\\ProfileController' => $baseDir . '/app/Http/Controllers/Settings/ProfileController.php',
     'App\\Http\\Controllers\\Settings\\TwoFactorAuthenticationController' => $baseDir . '/app/Http/Controllers/Settings/TwoFactorAuthenticationController.php',
     'App\\Http\\Middleware\\EnsureFormOwner' => $baseDir . '/app/Http/Middleware/EnsureFormOwner.php',
+    'App\\Http\\Middleware\\EnsureUserIsAdmin' => $baseDir . '/app/Http/Middleware/EnsureUserIsAdmin.php',
     'App\\Http\\Middleware\\HandleAppearance' => $baseDir . '/app/Http/Middleware/HandleAppearance.php',
     'App\\Http\\Middleware\\HandleInertiaRequests' => $baseDir . '/app/Http/Middleware/HandleInertiaRequests.php',
     'App\\Http\\Requests\\Settings\\ProfileUpdateRequest' => $baseDir . '/app/Http/Requests/Settings/ProfileUpdateRequest.php',
