@@ -47,7 +47,7 @@ const containerClasses = computed(() => [
 const containerStyle = computed(() => ({
   backgroundColor: 'white',
   ...(props.selected && {
-    '--tw-ring-color': props.formPrimaryColor,
+    '--tw-ring-color': props.form_primary_color,
   }),
 }));
 </script>
