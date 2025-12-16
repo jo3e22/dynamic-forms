@@ -3,19 +3,24 @@
 namespace App\Models;
 
 use Auth;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
 use Mail;
+
 use App\Mail\ShareFormLinkMail;
 use App\Mail\FormCollaborationMail;
 use App\Models\User;
 use App\Models\FormSection;
+use App\Models\Organisation\Organisation;
+use App\Models\Template\Template;
 
 class Form extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, HasUuids;
 
     const STATUS_DRAFT = 'draft';
     const STATUS_PENDING = 'pending';
@@ -24,8 +29,11 @@ class Form extends Model
 
     protected $fillable = [
         'status',
-        'sections',
         'user_id',
+        'organisation_id',
+        'template_id',
+        'primary_color',
+        'secondary_color',
     ];
 
     public function getRouteKeyName()
@@ -100,6 +108,26 @@ class Form extends Model
             static::STATUS_OPEN => ['label' => 'Open', 'color' => 'success'],
             static::STATUS_CLOSED => ['label' => 'Closed', 'color' => 'pink'],
         ];
+    }
+
+    public function organisation(): BelongsTo
+    {
+        return $this->belongsTo(Organisation::class);
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(Template::class);
+    }
+
+    public function isOwnedByOrganisation(): bool
+    {
+        return $this->organisation_id !== null;
+    }
+
+    public function isOwnedBy(User $user): bool
+    {
+        return $this->user_id === $user->id;
     }
 }
 

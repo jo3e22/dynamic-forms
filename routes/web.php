@@ -11,6 +11,8 @@ use App\Models\Submission;
 use App\Http\Controllers\Form\FormController;
 use App\Http\Controllers\Form\SubmissionController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Organisation\OrganisationController;
+use App\Http\Controllers\Organisation\OrganisationMemberController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -55,3 +57,20 @@ Route::post('/notifications/{notification}/read', [NotificationController::class
 Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])
     ->middleware(['auth'])
     ->name('notifications.markAllRead');
+
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Organisations
+    Route::resource('organisations', OrganisationController::class);
+    Route::post('organisations/{organisation}/switch', [OrganisationController::class, 'switchCurrent'])
+        ->name('organisations.switch');
+    
+    // Organisation members
+    Route::post('organisations/{organisation}/members', [OrganisationMemberController::class, 'store'])
+        ->name('organisations.members.store');
+    Route::put('organisations/{organisation}/members/{user}', [OrganisationMemberController::class, 'update'])
+        ->name('organisations.members.update');
+    Route::delete('organisations/{organisation}/members/{user}', [OrganisationMemberController::class, 'destroy'])
+        ->name('organisations.members.destroy');
+});
