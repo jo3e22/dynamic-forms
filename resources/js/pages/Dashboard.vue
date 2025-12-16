@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, FileText, BarChart3 } from 'lucide-vue-next';
+import { Plus, Edit, FileText, BarChart3, Building2, User } from 'lucide-vue-next';
 import { computed } from 'vue';
 import StatsCard from '@/components/common/StatsCard.vue';
 import FormCard from '@/components/forms/FormCard.vue';
@@ -21,9 +21,19 @@ interface Form {
   submissions_count?: number;
 }
 
+interface Organisation {
+  id: number;
+  name: string;
+  slug: string;
+  short_name?: string;
+}
+
 const props = defineProps<{
   forms: Form[];
 }>();
+
+const page = usePage();
+const currentOrganisation = computed(() => page.props.currentOrganisation as Organisation | null);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -68,6 +78,22 @@ function deleteForm(code: string, title: string) {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <!-- Workspace Indicator -->
+            <div v-if="currentOrganisation" class="flex items-center gap-2 p-3 bg-accent rounded-lg border">
+                <Building2 class="h-5 w-5 text-muted-foreground" />
+                <div>
+                    <p class="text-sm font-medium">{{ currentOrganisation.name }}</p>
+                    <p class="text-xs text-muted-foreground">Organisation Workspace</p>
+                </div>
+            </div>
+            <div v-else class="flex items-center gap-2 p-3 bg-accent rounded-lg border">
+                <User class="h-5 w-5 text-muted-foreground" />
+                <div>
+                    <p class="text-sm font-medium">Personal Workspace</p>
+                    <p class="text-xs text-muted-foreground">Your private forms</p>
+                </div>
+            </div>
+            
             <!-- Stats Cards -->
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
                 <StatsCard

@@ -40,21 +40,16 @@ const handleLogout = () => {
 };
 
 function switchOrganisation(org: Organisation) {
-    router.post(`/organisations/switch/${org.slug}`, {}, {
+    router.post(`/organisations/${org.slug}/switch`, {}, {
+        preserveState: false,
         preserveScroll: true,
-        onSuccess: () => {
-            // Force a full page reload to refresh all Inertia shared data
-            router.reload({ only: ['organisations', 'currentOrganisation', 'forms'] });
-        }
     });
 }
 
 function clearOrganisation() {
     router.post('/organisations/clear', {}, {
+        preserveState: false,
         preserveScroll: true,
-        onSuccess: () => {
-            router.reload({ only: ['organisations', 'currentOrganisation', 'forms'] });
-        }
     });
 }
 </script>

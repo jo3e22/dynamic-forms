@@ -134,7 +134,7 @@ class OrganisationController extends Controller
 
         session(['current_organisation_id' => $organisation->id]);
 
-        return redirect()->back()
+        return redirect('/forms')
             ->with('success', "Switched to {$organisation->name}");
     }
 
@@ -155,7 +155,7 @@ class OrganisationController extends Controller
     {
         session()->forget('current_organisation_id');
 
-        return redirect()->back()
+        return redirect('/forms')
             ->with('success', 'Switched to personal workspace');
     }
 }

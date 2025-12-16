@@ -11,9 +11,21 @@ class OrganisationService
 {
     public function createOrganisation(array $data, User $owner): Organisation
     {
+        // Auto-generate slug if not provided
+        if (empty($data['slug'])) {
+            $data['slug'] = \Illuminate\Support\Str::slug($data['name']);
+            
+            // Ensure uniqueness
+            $baseSlug = $data['slug'];
+            $counter = 1;
+            while (Organisation::where('slug', $data['slug'])->exists()) {
+                $data['slug'] = $baseSlug . '-' . $counter++;
+            }
+        }
+        
         $organisation = Organisation::create([
             'name' => $data['name'],
-            'slug' => $data['slug'] ?? null,
+            'slug' => $data['slug'],
             'short_name' => $data['short_name'] ?? null,
             'parent_id' => $data['parent_id'] ?? null,
             'type' => $data['type'] ?? 'other',
