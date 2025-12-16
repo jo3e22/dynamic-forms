@@ -24,9 +24,11 @@ Route::get('dashboard', function () {
     return redirect('/forms');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Individual form dashboard
-Route::get('/forms/{form}', [FormController::class, 'show'])->name('forms.show');
+// IMPORTANT: Specific routes must come BEFORE dynamic routes
 Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create');
+
+// Individual form routes (dynamic {form} parameter)
+Route::get('/forms/{form}', [FormController::class, 'show'])->name('forms.show');
 Route::get('/forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit');
 Route::put('/forms/{form}/edit', [FormController::class, 'update'])->name('forms.update');
 Route::delete('/forms/{form}', [FormController::class, 'destroy'])->name('forms.destroy');
