@@ -113,12 +113,6 @@ function clearOrganisation() {
     <!-- Organisation Actions -->
     <DropdownMenuGroup v-if="user.is_admin">
         <DropdownMenuItem as-child>
-            <Link href="/admin/organisations/create" class="cursor-pointer">
-                <Plus class="mr-2 h-4 w-4" />
-                Create Organisation
-            </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem as-child>
             <Link href="/admin/organisations" class="cursor-pointer">
                 <Building2 class="mr-2 h-4 w-4" />
                 Admin Panel

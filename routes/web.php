@@ -72,6 +72,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/organisations/{organisation}', [\App\Http\Controllers\Organisation\OrganisationController::class, 'show'])->name('organisations.show');
     Route::get('/organisations/{organisation}/edit', [\App\Http\Controllers\Organisation\OrganisationController::class, 'edit'])->name('organisations.edit');
     Route::put('/organisations/{organisation}', [\App\Http\Controllers\Organisation\OrganisationController::class, 'update'])->name('organisations.update');
+    Route::delete('/organisations/{organisation}', [\App\Http\Controllers\Organisation\OrganisationController::class, 'destroy'])->name('organisations.destroy');
     
     // Member management (org owners/admins)
     Route::post('/organisations/{organisation}/members', [\App\Http\Controllers\Organisation\OrganisationMemberController::class, 'store'])->name('organisations.members.store');
