@@ -4,8 +4,8 @@ import { computed } from 'vue';
 interface Props {
   selected: boolean;
   selectKey: string;
-  formPrimaryColor: string;
-  formSecondaryColor: string;
+  form_primary_color: string;
+  form_secondary_color: string;
   showToolbar?: boolean;
 }
 
