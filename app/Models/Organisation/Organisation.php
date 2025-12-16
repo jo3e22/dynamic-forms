@@ -10,13 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
-
 use App\Enums\OrganisationType;
+use App\Models\User;
 use App\Models\Form;
 use App\Models\Template\Template;
-use App\Models\User;
 use App\Models\Organisation\OrganisationBranding;
-use App\Models\Organisation\OrganisationDetail;
 
 class Organisation extends Model
 {

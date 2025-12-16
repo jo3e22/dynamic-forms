@@ -1,4 +1,5 @@
 <?php
+// database/migrations/2025_12_16_143838_create_templates_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -28,11 +29,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->morphs('owner'); // owner_id, owner_type (User or Organisation)
+            $table->morphs('owner'); // This ALREADY creates the index
             $table->enum('visibility', ['private', 'organisation', 'public'])->default('private');
             $table->enum('category', ['form', 'section', 'field_group', 'other'])->default('form');
-            $table->json('data'); // The actual form structure
-            $table->json('metadata')->nullable(); // Tags, etc.
+            $table->json('data');
+            $table->json('metadata')->nullable();
             $table->string('thumbnail_url')->nullable();
             $table->boolean('is_featured')->default(false);
             $table->unsignedInteger('use_count')->default(0);
@@ -40,7 +41,9 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
 
-            $table->index(['owner_type', 'owner_id']);
+            // DON'T add this - morphs() already creates it!
+            // $table->index(['owner_type', 'owner_id']);
+            
             $table->index(['visibility', 'category']);
             $table->index('is_featured');
             $table->index('average_rating');
@@ -76,7 +79,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('template_id');
             $table->unsignedBigInteger('user_id');
-            $table->unsignedTinyInteger('rating'); // 1-5
+            $table->unsignedTinyInteger('rating');
             $table->text('review')->nullable();
             $table->timestamps();
 

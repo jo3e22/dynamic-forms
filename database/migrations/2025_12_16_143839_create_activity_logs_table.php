@@ -18,9 +18,7 @@ return new class extends Migration
             $table->json('properties')->nullable();
             $table->string('batch_uuid')->nullable();
             $table->timestamp('created_at');
-
-            $table->index(['subject_type', 'subject_id']);
-            $table->index(['causer_type', 'causer_id']);
+            
             $table->index('log_name');
             $table->index('created_at');
             $table->index('batch_uuid');

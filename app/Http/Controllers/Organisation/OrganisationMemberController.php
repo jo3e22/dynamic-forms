@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Organisation;
 
+use App\Http\Controllers\Controller;
 use App\Models\Organisation\Organisation;
 use App\Models\User;
 use App\Services\OrganisationService;
