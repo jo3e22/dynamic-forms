@@ -5,9 +5,14 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, User, Calendar, CheckCircle2, Clock, XCircle, List, LayoutGrid, Table, Users, FileText } from 'lucide-vue-next';
 import type { FormDTO, FormBuilderData } from '@/types';
+import StatsCard from '@/components/common/StatsCard.vue';
+import SubmissionCard from '@/components/submissions/SubmissionCard.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
+import DashboardContainer from '@/components/common/DashboardContainer.vue';
+import { useFormStatus } from '@/composables/useFormStatus';
+import { useDateTime } from '@/composables/useDateTime';
 
 interface SubmissionField {
   id: number;
@@ -42,6 +47,8 @@ const props = defineProps<Props>();
 
 const form_primary_color = props.form.primary_color ?? '#3B82F6';
 const form_secondary_color = props.form.secondary_color ?? '#EFF6FF';
+const { getStatusColor } = useFormStatus();
+const { formatDate, formatDateTime, formatDateShort } = useDateTime();
 
 // View mode: 'cards' or 'table'
 const viewMode = ref<'cards' | 'table'>('cards');
@@ -119,43 +126,13 @@ function getStatusStyle(status: string) {
   return colors[status as keyof typeof colors] || colors.draft;
 }
 
-// Format date
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-}
-
-function formatDateTime(dateString: string): string {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
-}
-
-// Format date - short version for table
-function formatDateShort(dateString: string): string {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: '2-digit',
-  }).format(date);
-}
 
 // View submission detail
 function viewSubmission(submission: Submission) {
   router.visit(`/forms/${props.form.code}/submissions/${submission.code}`);
 }
 
-// Go back to submissions list
+// Go back to list
 function backToList() {
   router.visit(`/forms/${props.form.code}/submissions`);
 }
@@ -224,194 +201,142 @@ function getSubmitterName(submission: Submission): string {
       <div v-if="!selectedSubmission">
         <!-- Stats Cards -->
         <div class="grid auto-rows-min gap-4 md:grid-cols-3 mb-4">
-          <Card class="border-sidebar-border/70 dark:border-sidebar-border">
-            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle class="text-sm font-medium">Total Submissions</CardTitle>
-              <FileText class="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div class="text-2xl font-bold">{{ submissions.length }}</div>
-              <p class="text-xs text-muted-foreground">
-                All responses
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card class="border-sidebar-border/70 dark:border-sidebar-border">
-            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle class="text-sm font-medium">Completed</CardTitle>
-              <CheckCircle2 class="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div class="text-2xl font-bold">{{ completedCount }}</div>
-              <p class="text-xs text-muted-foreground">
-                Fully submitted
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card class="border-sidebar-border/70 dark:border-sidebar-border">
-            <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle class="text-sm font-medium">In Progress</CardTitle>
-              <Clock class="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div class="text-2xl font-bold">{{ incompleteCount }}</div>
-              <p class="text-xs text-muted-foreground">
-                Incomplete forms
-              </p>
-            </CardContent>
-          </Card>
+          <StatsCard
+            title="Total Submissions"
+            :value="submissions.length"
+            description="All responses"
+            :icon="FileText"
+          />
+          <StatsCard
+            title="Completed"
+            :value="completedCount"
+            description="Fully submitted"
+            :icon="CheckCircle2"
+          />
+          <StatsCard
+            title="In Progress"
+            :value="incompleteCount"
+            description="Incomplete forms"
+            :icon="Clock"
+          />
         </div>
 
         <!-- Submissions List -->
-        <div class="relative flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-card">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <div>
-                <h2 class="text-2xl font-bold">Submissions</h2>
-                <p class="text-sm text-muted-foreground">All responses to this form</p>
-              </div>
-              
-              <!-- View Toggle -->
-              <div v-if="submissions.length > 0" class="flex gap-2">
-                <Button
-                  :variant="viewMode === 'cards' ? 'default' : 'outline'"
-                  size="sm"
-                  @click="viewMode = 'cards'"
-                >
-                  <LayoutGrid class="w-4 h-4 mr-2" />
-                  Cards
-                </Button>
-                <Button
-                  :variant="viewMode === 'table' ? 'default' : 'outline'"
-                  size="sm"
-                  @click="viewMode = 'table'"
-                >
-                  <Table class="w-4 h-4 mr-2" />
-                  Table
-                </Button>
-              </div>
-            </div>
-
-            <!-- Empty State -->
-            <div v-if="submissions.length === 0" class="text-center py-16">
-              <div class="w-20 h-20 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-                <XCircle class="w-10 h-10 text-muted-foreground" />
-              </div>
-              <h3 class="text-xl font-semibold mb-2">No Submissions Yet</h3>
-              <p class="text-muted-foreground">This form hasn't received any submissions yet.</p>
-            </div>
-
-            <!-- Card View -->
-            <div v-else-if="viewMode === 'cards'" class="space-y-3">
-              <Card 
-                v-for="submission in submissions" 
-                :key="submission.id"
-                class="hover:shadow-md transition-shadow cursor-pointer"
-                @click="viewSubmission(submission)"
+        <DashboardContainer
+          title="Submissions"
+          description="All responses to this form"
+        >
+          <template #actions>
+            <div v-if="submissions.length > 0" class="flex gap-2">
+              <Button
+                :variant="viewMode === 'cards' ? 'default' : 'outline'"
+                size="sm"
+                @click="viewMode = 'cards'"
               >
-                <CardHeader class="pb-3">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Users :size="18" class="text-primary" />
+                <LayoutGrid class="w-4 h-4 mr-2" />
+                Cards
+              </Button>
+              <Button
+                :variant="viewMode === 'table' ? 'default' : 'outline'"
+                size="sm"
+                @click="viewMode = 'table'"
+              >
+                <Table class="w-4 h-4 mr-2" />
+                Table
+              </Button>
+            </div>
+          </template>
+
+          <!-- Empty State -->
+          <EmptyState
+            v-if="submissions.length === 0"
+            :icon="XCircle"
+            title="No Submissions Yet"
+            description="This form hasn't received any submissions yet."
+          />
+
+          <!-- Card View -->
+          <div v-else-if="viewMode === 'cards'" class="space-y-3">
+            <SubmissionCard
+              v-for="submission in submissions"
+              :key="submission.id"
+              :submission="submission"
+              @click="viewSubmission"
+            />
+          </div>
+
+          <!-- Table View -->
+          <div v-else class="rounded-lg border border-sidebar-border/70 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-muted/50 border-b border-sidebar-border/70">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Submitter
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th 
+                      v-for="field in allFields" 
+                      :key="field.id"
+                      class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[200px]"
+                    >
+                      <div class="flex flex-col">
+                        <span>{{ field.label }}</span>
+                        <span class="text-muted-foreground/70 font-normal normal-case text-xs">{{ field.sectionTitle }}</span>
                       </div>
-                      <div>
-                        <CardTitle class="text-base">
-                          {{ getSubmitterName(submission) }}
-                        </CardTitle>
-                        <CardDescription class="text-xs">
-                          Submission #{{ submission.id }}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-3">
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-sidebar-border/70">
+                  <tr 
+                    v-for="submission in submissions" 
+                    :key="submission.id"
+                    class="hover:bg-muted/50 cursor-pointer transition-colors"
+                    @click="viewSubmission(submission)"
+                  >
+                    <td class="px-4 py-3 text-sm font-medium">
+                      #{{ submission.id }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                      {{ getSubmitterName(submission) }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
+                      {{ formatDateShort(submission.created_at) }}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
                       <Badge :class="getStatusStyle(submission.status)">
                         {{ submission.status }}
                       </Badge>
-                      <span class="text-xs text-muted-foreground">
-                        {{ formatDateTime(submission.created_at) }}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            </div>
-
-            <!-- Table View -->
-            <div v-else class="rounded-lg border border-sidebar-border/70 overflow-hidden">
-              <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead class="bg-muted/50 border-b border-sidebar-border/70">
-                    <tr>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        ID
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Submitter
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th 
-                        v-for="field in allFields" 
-                        :key="field.id"
-                        class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider min-w-[200px]"
-                      >
-                        <div class="flex flex-col">
-                          <span>{{ field.label }}</span>
-                          <span class="text-muted-foreground/70 font-normal normal-case text-xs">{{ field.sectionTitle }}</span>
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-sidebar-border/70">
-                    <tr 
-                      v-for="submission in submissions" 
-                      :key="submission.id"
-                      class="hover:bg-muted/50 cursor-pointer transition-colors"
-                      @click="viewSubmission(submission)"
+                    </td>
+                    <td 
+                      v-for="field in allFields" 
+                      :key="field.id"
+                      class="px-4 py-3 text-sm"
                     >
-                      <td class="px-4 py-3 text-sm font-medium">
-                        #{{ submission.id }}
-                      </td>
-                      <td class="px-4 py-3 text-sm">
-                        {{ getSubmitterName(submission) }}
-                      </td>
-                      <td class="px-4 py-3 text-sm text-muted-foreground whitespace-nowrap">
-                        {{ formatDateShort(submission.created_at) }}
-                      </td>
-                      <td class="px-4 py-3 text-sm">
-                        <Badge :class="getStatusStyle(submission.status)">
-                          {{ submission.status }}
-                        </Badge>
-                      </td>
-                      <td 
-                        v-for="field in allFields" 
-                        :key="field.id"
-                        class="px-4 py-3 text-sm"
-                      >
-                        <div class="max-w-xs truncate" :title="getAnswer(submission, field.id)">
-                          {{ getAnswer(submission, field.id) }}
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                      <div class="max-w-xs truncate" :title="getAnswer(submission, field.id)">
+                        {{ getAnswer(submission, field.id) }}
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
+        </DashboardContainer>
       </div>
 
       <!-- Detail View -->
-      <div v-else class="relative flex-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border bg-card">
-        <div class="p-6">
-          <div class="flex items-start justify-between mb-6">
+      <DashboardContainer v-else>
+        <template #header>
+          <div class="flex items-start justify-between w-full">
             <div>
               <div class="flex items-center gap-3 mb-2">
                 <h2 class="text-2xl font-bold">Submission #{{ selectedSubmission.id }}</h2>
@@ -439,52 +364,52 @@ function getSubmitterName(submission: Submission): string {
               All Submissions
             </Button>
           </div>
+        </template>
 
-          <div class="space-y-8">
-            <!-- Iterate through sections -->
-            <div 
-              v-for="(section, sectionIndex) in data" 
-              :key="section.id ?? sectionIndex"
-              class="space-y-4"
-            >
-              <!-- Section Header -->
-              <div class="border-l-4 pl-4 py-2 border-primary">
-                <h3 class="text-xl font-semibold">{{ section.title }}</h3>
-                <p v-if="section.description" class="text-sm text-muted-foreground mt-1">
-                  {{ section.description }}
-                </p>
-              </div>
+        <div class="space-y-8">
+          <!-- Iterate through sections -->
+          <div 
+            v-for="(section, sectionIndex) in data" 
+            :key="section.id ?? sectionIndex"
+            class="space-y-4"
+          >
+            <!-- Section Header -->
+            <div class="border-l-4 pl-4 py-2 border-primary">
+              <h3 class="text-xl font-semibold">{{ section.title }}</h3>
+              <p v-if="section.description" class="text-sm text-muted-foreground mt-1">
+                {{ section.description }}
+              </p>
+            </div>
 
-              <!-- Fields and Answers -->
-              <div class="ml-4 space-y-4">
-                <div 
-                  v-for="field in section.fields" 
-                  :key="field.id"
-                  class="border-b border-sidebar-border/70 pb-4 last:border-0"
-                >
-                  <div class="flex items-start justify-between gap-4">
-                    <div class="flex-1">
-                      <label class="block text-sm font-medium mb-2">
-                        {{ field.label }}
-                        <span v-if="field.required" class="text-destructive ml-1">*</span>
-                      </label>
-                      <div class="text-sm">
-                        {{ formatAnswer(
-                          selectedSubmission.submissionFields?.find(sf => sf.form_field_id === field.id)?.answer,
-                          field.id
-                        ) }}
-                      </div>
+            <!-- Fields and Answers -->
+            <div class="ml-4 space-y-4">
+              <div 
+                v-for="field in section.fields" 
+                :key="field.id"
+                class="border-b border-sidebar-border/70 pb-4 last:border-0"
+              >
+                <div class="flex items-start justify-between gap-4">
+                  <div class="flex-1">
+                    <label class="block text-sm font-medium mb-2">
+                      {{ field.label }}
+                      <span v-if="field.required" class="text-destructive ml-1">*</span>
+                    </label>
+                    <div class="text-sm">
+                      {{ formatAnswer(
+                        selectedSubmission.submissionFields?.find(sf => sf.form_field_id === field.id)?.answer,
+                        field.id
+                      ) }}
                     </div>
-                    <Badge variant="outline" class="text-xs">
-                      {{ field.type }}
-                    </Badge>
                   </div>
+                  <Badge variant="outline" class="text-xs">
+                    {{ field.type }}
+                  </Badge>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </DashboardContainer>
     </div>
   </AppLayout>
 </template>
