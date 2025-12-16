@@ -90,18 +90,29 @@ const footerNavItems = [
                         class="group/collapsible"
                     >
                         <SidebarMenuItem>
-                            <CollapsibleTrigger as-child>
+                            <div class="flex items-center w-full">
                                 <SidebarMenuButton
+                                    as-child
                                     :is-active="urlIsActive('/forms', page.url)"
                                     :tooltip="'Forms'"
+                                    class="flex-1"
                                 >
-                                    <FileText />
-                                    <span>Forms</span>
-                                    <ChevronRight 
-                                        class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-                                    />
+                                    <Link href="/forms">
+                                        <FileText />
+                                        <span>Forms</span>
+                                    </Link>
                                 </SidebarMenuButton>
-                            </CollapsibleTrigger>
+                                <CollapsibleTrigger as-child>
+                                    <button
+                                        class="flex h-8 w-8 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground"
+                                        @click.stop
+                                    >
+                                        <ChevronRight 
+                                            class="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                                        />
+                                    </button>
+                                </CollapsibleTrigger>
+                            </div>
                             
                             <CollapsibleContent>
                                 <SidebarMenuSub>
