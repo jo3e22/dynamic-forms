@@ -25,21 +25,30 @@ class FormController extends Controller
 
     public function index()
     {
-        $forms = Auth::user()->forms()
+        $currentOrgId = session('current_organisation_id');
+        
+        $query = Auth::user()->forms()
             ->with('sections:id,form_id,title,section_order')
             ->withCount('submissions')
-            ->latest()
-            ->get()
-            ->map(function($form) {
-                return [
-                    'id' => $form->id,
-                    'code' => $form->code,
-                    'status' => $form->status,
-                    'title' => $form->title, // Uses the accessor
-                    'created_at' => $form->created_at,
-                    'submissions_count' => $form->submissions_count,
-                ];
-            });
+            ->latest();
+        
+        // Filter by organisation context
+        if ($currentOrgId) {
+            $query->where('organisation_id', $currentOrgId);
+        } else {
+            $query->whereNull('organisation_id');
+        }
+        
+        $forms = $query->get()->map(function($form) {
+            return [
+                'id' => $form->id,
+                'code' => $form->code,
+                'status' => $form->status,
+                'title' => $form->title,
+                'created_at' => $form->created_at,
+                'submissions_count' => $form->submissions_count,
+            ];
+        });
         
         return Inertia::render('Dashboard', [
             'forms' => $forms,
@@ -48,7 +57,8 @@ class FormController extends Controller
 
     public function create()
     {
-        $form = $this->formService->createForm(Auth::user());
+        $currentOrgId = session('current_organisation_id');
+        $form = $this->formService->createForm(Auth::user(), $currentOrgId);
         return redirect()->route('forms.edit', $form);
     }
 

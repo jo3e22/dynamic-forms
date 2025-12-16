@@ -11,13 +11,14 @@ class FormService
     /**
      * Create a new form with default section
      */
-    public function createForm(User $user): Form
+    public function createForm(User $user, ?int $organisationId = null): Form
     {
         $form = new Form();
         $form->generateCode();
         $form->status = Form::STATUS_DRAFT;
         $form->primary_color = '#3B82F6';
         $form->secondary_color = '#EFF6FF';
+        $form->organisation_id = $organisationId;
         $user->forms()->save($form);
 
         // Create first section

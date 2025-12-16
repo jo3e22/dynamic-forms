@@ -174,12 +174,12 @@ function formatDate(dateString: string) {
                             <!-- Actions -->
                             <div class="flex items-center gap-2 flex-shrink-0">
                                 <Button variant="outline" size="sm" as-child>
-                                    <Link :href="`/organisations/${org.id}`">
+                                    <Link :href="`/organisations/${org.slug}`">
                                         View
                                     </Link>
                                 </Button>
                                 <Button variant="outline" size="sm" as-child>
-                                    <Link :href="`/organisations/${org.id}/edit`">
+                                    <Link :href="`/organisations/${org.slug}/edit`">
                                         Edit
                                     </Link>
                                 </Button>
