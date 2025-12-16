@@ -23,7 +23,7 @@ import {
 import { urlIsActive } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, FileText, ChevronRight, Bell } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import AppLogo from './AppLogo.vue';
 import { Badge } from '@/components/ui/badge';
 
@@ -31,6 +31,13 @@ const page = usePage();
 
 const forms = computed(() => page.props.forms as any[] || []);
 const unreadCount = computed(() => page.props.unreadNotificationsCount as number || 0);
+
+// Persist the collapsible state in sessionStorage
+const formsExpanded = ref(sessionStorage.getItem('forms-expanded') !== 'false');
+
+watch(formsExpanded, (newValue) => {
+    sessionStorage.setItem('forms-expanded', String(newValue));
+});
 
 const footerNavItems = [
     {
@@ -85,8 +92,8 @@ const footerNavItems = [
 
                     <!-- Forms with collapsible sub-items -->
                     <Collapsible
+                        v-model:open="formsExpanded"
                         as-child
-                        default-open
                         class="group/collapsible"
                     >
                         <SidebarMenuItem>
