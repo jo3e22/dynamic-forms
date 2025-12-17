@@ -137,7 +137,18 @@ class FormController extends Controller
 
     public function viewform(Form $form)
     {
-        $submission = $this->submissionService->getOrCreateSubmission(Auth::user(), $form);
+        // Check if form is shareable
+        if ($form->status !== Form::STATUS_OPEN) {
+            abort(403, 'This form is not accepting responses');
+        }
+
+        // Check sharing settings
+        $user = auth()->user();
+        if (!$form->isGuestAllowed() && !$user) {
+            abort(403, 'You must be logged in to view this form');
+        }
+
+        $submission = $this->submissionService->getOrCreateSubmission(auth()->user(), $form);
         $submissionFields = $submission->submissionFields;
         $data = $this->formService->buildFormData($form);
 
@@ -148,12 +159,16 @@ class FormController extends Controller
                 'status' => $form->status,
                 'primary_color' => $form->primary_color,
                 'secondary_color' => $form->secondary_color,
+                'sharing_type' => $form->sharing_type,
+                'is_email_required' => $form->isEmailRequired(),
             ],
             'data' => $data,
             'submission' => [
                 'id' => $submission->id,
                 'code' => $submission->code,
                 'status' => $submission->status,
+                'email' => $submission->email,
+                'guest_name' => $submission->guest_name,
             ],
             'submissionFields' => $submissionFields->map(fn($sf) => [
                 'id' => $sf->id,

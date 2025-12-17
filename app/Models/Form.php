@@ -26,6 +26,10 @@ class Form extends Model
     const STATUS_OPEN = 'open';
     const STATUS_CLOSED = 'closed';
 
+    public const SHARING_AUTHENTICATED_ONLY = 'authenticated_only';
+    public const SHARING_GUEST_ALLOWED = 'guest_allowed';
+    public const SHARING_GUEST_EMAIL_REQUIRED = 'guest_email_required';
+
     protected $fillable = [
         'status',
         'user_id',
@@ -33,6 +37,8 @@ class Form extends Model
         'template_id',
         'primary_color',
         'secondary_color',
+        'sharing_type',
+        'allow_duplicate_responses',
     ];
 
     public function getRouteKeyName()
@@ -127,6 +133,19 @@ class Form extends Model
     public function isOwnedBy(User $user): bool
     {
         return $this->user_id === $user->id;
+    }
+
+    public function isGuestAllowed(): bool
+    {
+        return in_array($this->sharing_type, [
+            self::SHARING_GUEST_ALLOWED,
+            self::SHARING_GUEST_EMAIL_REQUIRED,
+        ]);
+    }
+
+    public function isEmailRequired(): bool
+    {
+        return $this->sharing_type === self::SHARING_GUEST_EMAIL_REQUIRED;
     }
 }
 

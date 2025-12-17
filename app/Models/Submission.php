@@ -21,7 +21,8 @@ class Submission extends Model
         'form_id',
         'user_id',
         'status',
-        'email'
+        'email',
+        'guest_name',
     ];
 
     public function getRouteKeyName()
@@ -51,5 +52,13 @@ class Submission extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public static function hasDuplicateEmail(Form $form, string $email): bool
+    {
+        return self::where('form_id', $form->id)
+            ->where('email', $email)
+            ->where('status', '!=', self::STATUS_DRAFT)
+            ->exists();
     }
 }

@@ -12,18 +12,28 @@ class SubmissionService
     /**
      * Get or create submission for user and form
      */
-    public function getOrCreateSubmission(User $user, Form $form): Submission
+    public function getOrCreateSubmission(?User $user, Form $form): Submission
     {
-        $submission = $user->submissions()->where('form_id', $form->id)->first();
+        if ($user) {
+            $submission = Submission::where('form_id', $form->id)
+                ->where('user_id', $user->id)
+                ->first();
 
-        if (!$submission) {
-            $submission = new Submission();
-            $submission->generateCode();
-            $submission->status = Submission::STATUS_DRAFT;
-            $submission->form_id = $form->id;
-            $submission->user_id = $user->id;
-            $submission->save();
+            if ($submission) {
+                return $submission;
+            }
         }
+
+        // Create new submission for guest or authenticated user without existing submission
+        $submission = new Submission();
+        $submission->form_id = $form->id;
+        $submission->user_id = $user?->id;
+        $submission->generateCode();
+        $submission->status = Submission::STATUS_DRAFT;
+        $submission->save();
+
+        // Create submission fields from form fields
+        $this->createSubmissionFields($submission);
 
         return $submission;
     }
@@ -31,39 +41,37 @@ class SubmissionService
     /**
      * Process and save submission fields
      */
-    public function saveSubmissionFields(Submission $submission, array $submissionFieldsData): void
+    public function saveSubmissionWithGuestInfo(
+        Submission $submission,
+        array $submissionFields,
+        ?string $email = null,
+        ?string $guestName = null
+    ): void
     {
-        $existingSubmissionFieldIds = [];
+        // Validate email if required
+        if ($submission->form->isEmailRequired() && !$email) {
+            throw new \InvalidArgumentException('Email is required for this form');
+        }
 
-        foreach ($submissionFieldsData as $submissionFieldData) {
-            // Parse the answer if it's a JSON string
-            $answer = $submissionFieldData['answer'];
-            if (is_string($answer) && json_decode($answer) !== null) {
-                $answer = json_decode($answer, true);
-            }
-
-            if (isset($submissionFieldData['id'])) {
-                // Update existing field
-                $submissionField = $submission->submissionFields()->find($submissionFieldData['id']);
-                if ($submissionField) {
-                    $submissionField->update([
-                        'form_field_id' => $submissionFieldData['form_field_id'],
-                        'answer' => $answer,
-                    ]);
-                    $existingSubmissionFieldIds[] = $submissionField->id;
-                }
-            } else {
-                // Create new field
-                $newSubmissionField = $submission->submissionFields()->create([
-                    'form_field_id' => $submissionFieldData['form_field_id'],
-                    'answer' => $answer,
-                ]);
-                $existingSubmissionFieldIds[] = $newSubmissionField->id;
+        // Check for duplicate responses if not allowed
+        if (!$submission->form->allow_duplicate_responses && $email) {
+            if (Submission::hasDuplicateEmail($submission->form, $email)) {
+                throw new \InvalidArgumentException('This email has already submitted a response');
             }
         }
 
-        // Delete fields that were removed
-        $submission->submissionFields()->whereNotIn('id', $existingSubmissionFieldIds)->delete();
+        // Save guest info
+        if ($email) {
+            $submission->email = $email;
+        }
+        if ($guestName) {
+            $submission->guest_name = $guestName;
+        }
+
+        $submission->save();
+
+        // Save fields
+        $this->saveSubmissionFields($submission, $submissionFields);
     }
 
     /**
