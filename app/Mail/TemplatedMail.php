@@ -20,6 +20,7 @@ class TemplatedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            to: [$this->recipientEmail],
             subject: $this->customSubject,
         );
     }
