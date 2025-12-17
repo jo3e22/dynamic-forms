@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use App\Models\Email\EmailLog;
 
-class TemplateddMail extends Mailable
+class TemplatedMail extends Mailable
 {
     public function __construct(
         public string $recipientEmail,
