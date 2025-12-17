@@ -14,6 +14,7 @@ use App\Http\Controllers\Form\SubmissionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Organisation\OrganisationController;
 use App\Http\Controllers\Organisation\OrganisationMemberController;
+use App\Http\Controllers\Form\FormSettingsController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -29,6 +30,12 @@ Route::get('dashboard', function () {
 
 // IMPORTANT: Specific routes must come BEFORE dynamic routes
 Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create');
+
+Route::prefix('forms/{form}/settings')->group(function () {
+    Route::get('/', [FormSettingsController::class, 'show']);
+    Route::post('/', [FormSettingsController::class, 'store']);
+    Route::put('/', [FormSettingsController::class, 'update']);
+});
 
 // Individual form routes (dynamic {form} parameter)
 Route::get('/forms/{form}', [FormController::class, 'show'])->name('forms.show');

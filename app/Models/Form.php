@@ -147,5 +147,26 @@ class Form extends Model
     {
         return $this->sharing_type === self::SHARING_GUEST_EMAIL_REQUIRED;
     }
+
+    public function settings()
+    {
+        return $this->hasOne(FormSettings::class);
+    }
+
+    // Example helper to check if accepting responses
+    public function isAcceptingResponses(): bool
+    {
+        $settings = $this->settings;
+        if (!$settings) return false;
+
+        $now = now();
+
+        if ($this->status !== self::STATUS_OPEN) return false;
+        if ($settings->open_at && $now->lt($settings->open_at)) return false;
+        if ($settings->close_at && $now->gt($settings->close_at)) return false;
+        if ($settings->max_submissions !== null && $this->submissions()->count() >= $settings->max_submissions) return false;
+
+        return true;
+    }
 }
 

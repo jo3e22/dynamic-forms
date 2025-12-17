@@ -11,6 +11,8 @@ import EmptyState from '@/components/common/EmptyState.vue';
 import DashboardContainer from '@/components/common/DashboardContainer.vue';
 import { useFormStatus } from '@/composables/useFormStatus';
 import { useDateTime } from '@/composables/useDateTime';
+import FormSettingsPanel from '@/components/form-builder/FormSettingsPanel.vue';
+import { ref } from 'vue';
 
 interface Form {
   id: number;
@@ -38,6 +40,8 @@ const props = defineProps<{
   recentSubmissions: Submission[];
 }>();
 
+const showSettings = ref(false);
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Forms',
@@ -51,6 +55,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const { getStatusColor } = useFormStatus();
 const { formatDate } = useDateTime();
+
+function goToSettings() {
+  router.visit(`/forms/${props.form.code}/settings`);
+}
 
 function editForm() {
   router.visit(`/forms/${props.form.code}/edit`);
@@ -94,6 +102,7 @@ function deleteForm() {
                     </p>
                 </div>
                 <div class="flex gap-2">
+                    <Button @click="showSettings = true">Settings</Button>
                     <Button @click="editForm" variant="default" class="gap-2">
                         <Edit :size="18" />
                         Edit Form
@@ -159,4 +168,13 @@ function deleteForm() {
             </DashboardContainer>
         </div>
     </AppLayout>
+
+    <teleport to="body">
+        <div v-if="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
+                <button @click="showSettings = false" class="absolute top-2 right-2 text-2xl">&times;</button>
+                <FormSettingsPanel :formCode="form.code" :initialSettings="form.settings" />
+            </div>
+        </div>
+    </teleport>
 </template>
