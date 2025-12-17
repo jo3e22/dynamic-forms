@@ -50,7 +50,7 @@ class EmailService
             if ($queue && config('queue.default') !== 'sync') {
                 Mail::queue(new \App\Mail\TemplatedMail(
                     recipientEmail: $recipientEmail,
-                    subject: $hydratedTemplate->subject,
+                    customSubject: $hydratedTemplate->subject,
                     body: $hydratedTemplate->body,
                     type: $template->type,
                     emailLog: $emailLog,
@@ -58,7 +58,7 @@ class EmailService
             } else {
                 Mail::send(new \App\Mail\TemplatedMail(
                     recipientEmail: $recipientEmail,
-                    subject: $hydratedTemplate->subject,
+                    customSubject: $hydratedTemplate->subject,
                     body: $hydratedTemplate->body,
                     type: $template->type,
                     emailLog: $emailLog,
@@ -125,7 +125,7 @@ class EmailService
 
             Mail::send(new \App\Mail\TemplatedMail(
                 recipientEmail: $recipientEmail,
-                subject: $hydratedTemplate->subject,
+                customSubject: $hydratedTemplate->subject,
                 body: $hydratedTemplate->body,
                 type: $template->type,
                 emailLog: null,

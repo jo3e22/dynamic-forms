@@ -11,17 +11,16 @@ class TemplatedMail extends Mailable
 {
     public function __construct(
         public string $recipientEmail,
-        public string $subject,
         public string $body,
         public string $type = 'html',
         public ?EmailLog $emailLog = null,
-    ) {
-    }
+        public string $customSubject = ''
+    ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->subject,
+            subject: $this->customSubject,
         );
     }
 
