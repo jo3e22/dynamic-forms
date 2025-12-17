@@ -1,6 +1,7 @@
 // Re-export all types from individual type files
 export * from './forms';
 export * from './submissions';
+export * from './formSettings';
 
 // Also export commonly used types directly
 export type {
@@ -42,3 +43,8 @@ export type {
   BreadcrumbItem,
   NavItem,
 } from './index.d';
+
+export type {
+  // Form settings types
+  FormSettingsDTO,
+} from './formSettings.d.ts';

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Form;
 use Inertia\Inertia;
 use App\Models\Form;
 use App\Services\FormService;
+use App\Services\FormSettingsService;
 use App\Services\SubmissionService;
 use App\Http\Requests\UpdateFormRequest;
 use App\Http\Resources\FormResource;
@@ -200,8 +201,10 @@ class FormController extends Controller
             ->limit(10)
             ->get();
 
+        $form->load('settings');
+
         return Inertia::render('forms/FormDashboard', [
-            'form' => $form->load('submissions'),
+            'form' => new FormResource($form),
             'recentSubmissions' => $recentSubmissions,
         ]);
     }

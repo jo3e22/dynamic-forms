@@ -13,6 +13,8 @@ import { useFormStatus } from '@/composables/useFormStatus';
 import { useDateTime } from '@/composables/useDateTime';
 import FormSettingsPanel from '@/components/form-builder/FormSettingsPanel.vue';
 import { ref } from 'vue';
+import type { FormSettingsDTO } from '@/types/formSettings'; // or the correct path
+
 
 interface Form {
   id: number;
@@ -22,6 +24,7 @@ interface Form {
   created_at: string;
   updated_at: string;
   submissions_count?: number;
+  settings?: FormSettingsDTO | null;
 }
 
 interface Submission {

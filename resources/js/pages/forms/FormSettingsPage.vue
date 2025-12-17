@@ -11,9 +11,9 @@ const props = defineProps<{
   <div>
     <h1>Form Settings</h1>
     <FormSettingsPanel
-        :formCode="form.code"
-        :initialSettings="form.settings"
-        @close="showSettings = false"
+    v-if="form && form.code"
+    :formCode="form.code"
+    :initialSettings="form.settings"
     />
   </div>
 </template>

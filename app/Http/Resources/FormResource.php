@@ -18,6 +18,7 @@ class FormResource extends JsonResource
             'secondary_color' => $this->secondary_color ?? '#EFF6FF',
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'settings' => $this->settings ?? null, // Always include, even if null
         ];
     }
 }
