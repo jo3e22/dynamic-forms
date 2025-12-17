@@ -11,6 +11,8 @@ use App\Models\Template\Template;
 use App\Policies\FormPolicy;
 use App\Policies\OrganisationPolicy;
 use App\Policies\TemplatePolicy;
+use App\Models\Email\EmailTemplate;
+use App\Policies\EmailTemplatePolicy;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Form::class, FormPolicy::class);
         Gate::policy(Organisation::class, OrganisationPolicy::class);
         Gate::policy(Template::class, TemplatePolicy::class);
+        Gate::policy(EmailTemplate::class, EmailTemplatePolicy::class);
 
         Inertia::share([
             'forms' => fn () => Auth::check() 
