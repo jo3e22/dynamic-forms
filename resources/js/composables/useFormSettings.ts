@@ -24,19 +24,26 @@ export function useFormSettings(formCode: string) {
   async function saveSettings(method: 'POST' | 'PUT' = 'PUT') {
     loading.value = true;
     error.value = null;
-    try {
-      const res = await fetch(`/forms/${formCode}/settings`, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings.value),
-      });
-      if (!res.ok) throw new Error('Failed to save settings');
-      settings.value = await res.json();
-    } catch (e: any) {
-      error.value = e.message;
-    } finally {
-      loading.value = false;
-    }
+    return new Promise<void>((resolve, reject) => {
+      router[method.toLowerCase()](
+        `/forms/${formCode}/settings`,
+        settings.value,
+        {
+          onSuccess: () => {
+            loading.value = false;
+            resolve();
+          },
+          onError: (errors) => {
+            error.value = 'Failed to save settings';
+            loading.value = false;
+            reject(errors);
+          },
+          onFinish: () => {
+            loading.value = false;
+          }
+        }
+      );
+    });
   }
 
   return { settings, loading, error, fetchSettings, saveSettings };

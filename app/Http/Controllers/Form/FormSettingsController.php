@@ -20,7 +20,6 @@ class FormSettingsController extends Controller
 
     public function show(Form $form)
     {
-        \Log::info('Loading form settings for form ID: ' . $form->id);
         $form->load('settings');
         if (!$form->settings) {
             // Option 1: Create default settings
@@ -33,8 +32,6 @@ class FormSettingsController extends Controller
             $form->refresh();
         }
 
-        \Log::info('Form settings loaded (sc)', ['settings' => $form->settings]);
-
         return Inertia::render('forms/FormSettingsPage', [
             'form' => $form,
             'settings' => $form->settings,
@@ -46,7 +43,8 @@ class FormSettingsController extends Controller
     {
         $validated = $this->validateSettings($request);
         $settings = $this->service->store($form, $validated);
-        return response()->json($settings, 201);
+        
+        return redirect()->back()->with('success', 'Settings updated!');
     }
 
     public function update(Request $request, Form $form)

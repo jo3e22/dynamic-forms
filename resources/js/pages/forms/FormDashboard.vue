@@ -87,8 +87,6 @@ function deleteForm() {
 </script>
 
 <template>
-    <pre>{{ form }}</pre>
-
     <Head :title="form.title" />
 
     <AppLayout :breadcrumbs="breadcrumbs">

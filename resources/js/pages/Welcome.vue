@@ -6,7 +6,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 </script>
 
 <template>
-  <Head title="Dynamic Forms - jdev.ie" />
+  <Head title="flow - jdev.ie" />
   
   <div class="min-h-screen bg-white">
     <!-- Navigation -->
