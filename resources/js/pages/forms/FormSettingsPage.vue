@@ -10,10 +10,6 @@ const props = defineProps<{
 <template>
   <div>
     <h1>Form Settings</h1>
-    <FormSettingsPanel
-    v-if="form && form.code"
-    :formCode="form.code"
-    :initialSettings="form.settings"
-    />
+    <FormSettingsPanel :formCode="form.code" :initialSettings="form.settings || {}" />
   </div>
 </template>

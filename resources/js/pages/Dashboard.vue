@@ -11,6 +11,9 @@ import StatsCard from '@/components/common/StatsCard.vue';
 import FormCard from '@/components/forms/FormCard.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import DashboardContainer from '@/components/common/DashboardContainer.vue';
+import { ref } from 'vue';
+import FormSettingsPanel from '@/components/form-builder/FormSettingsPanel.vue';
+
 
 interface Form {
   id: number;
@@ -19,6 +22,7 @@ interface Form {
   title: string;
   created_at: string;
   submissions_count?: number;
+  settings?: any;
 }
 
 interface Organisation {
@@ -49,6 +53,18 @@ const closedForms = computed(() => props.forms.filter(f => f.status === 'closed'
 const totalSubmissions = computed(() => 
   props.forms.reduce((sum, form) => sum + (form.submissions_count || 0), 0)
 );
+
+const showSettings = ref(false);
+const selectedForm = ref<Form | null>(null);
+
+function openSettings(form: Form) {
+  selectedForm.value = form;
+  showSettings.value = true;
+}
+function closeSettings() {
+  showSettings.value = false;
+  selectedForm.value = null;
+}
 
 function createForm() {
   router.visit('/forms/create');
@@ -167,6 +183,7 @@ function deleteForm(code: string, title: string) {
                             :form="form"
                             @edit="editForm"
                             @view-submissions="viewSubmissions"
+                            @settings="openSettings"
                             @delete="deleteForm"
                         />
                     </TabsContent>
@@ -222,4 +239,21 @@ function deleteForm(code: string, title: string) {
             </DashboardContainer>
         </div>
     </AppLayout>
+
+    <div
+    v-if="showSettings && selectedForm && selectedForm.code"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+    >
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
+        <button
+        @click="closeSettings"
+        class="absolute top-2 right-2 text-2xl"
+        aria-label="Close"
+        >&times;</button>
+        <FormSettingsPanel
+        :formCode="selectedForm.code"
+        :initialSettings="selectedForm.settings || {}"
+        />
+    </div>
+    </div>
 </template>

@@ -25,6 +25,7 @@ defineProps<Props>();
 const emit = defineEmits<{
   edit: [code: string];
   viewSubmissions: [code: string];
+  settings: [form: Form];
   delete: [code: string, title: string];
 }>();
 
@@ -74,6 +75,16 @@ const { formatDate } = useDateTime();
           <Eye :size="16" />
           Submissions
         </Button>
+
+        <Button
+          @click="emit('settings', form)"
+          variant="outline"
+          size="sm"
+          class="gap-2"
+        >
+          Settings
+        </Button>
+
         <Button
           @click="emit('delete', form.code, form.title)"
           variant="ghost"

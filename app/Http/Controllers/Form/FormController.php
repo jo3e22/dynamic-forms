@@ -202,6 +202,7 @@ class FormController extends Controller
             ->get();
 
         $form->load('settings');
+        \Log::info('Form settings', ['settings' => $form->settings]);
 
         return Inertia::render('forms/FormDashboard', [
             'form' => new FormResource($form),

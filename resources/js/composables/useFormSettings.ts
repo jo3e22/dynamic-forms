@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 import type { FormSettingsDTO } from '@/types/formSettings.d.ts';
 
 export function useFormSettings(formCode: string) {

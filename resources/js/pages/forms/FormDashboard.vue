@@ -87,6 +87,8 @@ function deleteForm() {
 </script>
 
 <template>
+    <pre>{{ form }}</pre>
+
     <Head :title="form.title" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
@@ -172,12 +174,11 @@ function deleteForm() {
         </div>
     </AppLayout>
 
-    <teleport to="body">
-        <div v-if="showSettings" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg relative">
-                <button @click="showSettings = false" class="absolute top-2 right-2 text-2xl">&times;</button>
-                <FormSettingsPanel :formCode="form.code" :initialSettings="form.settings" />
-            </div>
-        </div>
-    </teleport>
+    <div v-if="showSettings && form.code" class="my-4">
+    <FormSettingsPanel
+        :formCode="form.code"
+        :initialSettings="form.settings || {}"
+    />
+    <Button @click="showSettings = false" class="mt-2">Close</Button>
+    </div>
 </template>
