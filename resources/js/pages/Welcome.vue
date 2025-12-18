@@ -17,7 +17,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
             <AppLogoIcon class="w-5 h-5 text-white" checkColor="#CFB53B" />
           </div>
           <div class="flex flex-col">
-            <span class="text-xl font-semibold leading-tight">
+            <span class="text-xl font-extrabold leading-tight">
               <span class="">Dynamic</span>
               <span class="text-tealbrand">Forms</span>
             </span>
@@ -45,7 +45,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 
     <!-- Hero -->
     <section class="max-w-4xl mx-auto px-6 py-24">
-      <h1 class="text-5xl font-bold text-gray-900 mb-6">
+      <h1 class="text-5xl font-extrabold text-gray-900 mb-6">
         <span class="">Create and manage</span>
         <span class="text-goldbrand"> Forms</span>
       </h1>
