@@ -92,12 +92,12 @@
 
 :root {
     --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
+    --foreground: #104547;
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(0 0% 3.9%);
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
+    --primary: #104547;
     --primary-foreground: hsl(0 0% 98%);
     --secondary: hsl(0 0% 92.1%);
     --secondary-foreground: hsl(0 0% 9%);
@@ -118,7 +118,7 @@
     --radius: 0.5rem;
     --sidebar-background: hsl(0 0% 98%);
     --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
+    --sidebar-primary: #104547;
     --sidebar-primary-foreground: hsl(0 0% 98%);
     --sidebar-accent: hsl(0 0% 94%);
     --sidebar-accent-foreground: hsl(0 0% 30%);
@@ -129,21 +129,21 @@
 
 .dark {
     --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
+    --foreground: #CFB53B;
     --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
+    --card-foreground: #CFB53B;
     --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
+    --popover-foreground: #CFB53B;
+    --primary: #CFB53B;
     --primary-foreground: hsl(0 0% 9%);
     --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
+    --secondary-foreground: #CFB53B;
     --muted: hsl(0 0% 16.08%);
     --muted-foreground: hsl(0 0% 63.9%);
     --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
+    --accent-foreground: #CFB53B;
     --destructive: hsl(0 84% 60%);
-    --destructive-foreground: hsl(0 0% 98%);
+    --destructive-foreground: #CFB53B;
     --border: hsl(0 0% 14.9%);
     --input: hsl(0 0% 14.9%);
     --ring: hsl(0 0% 83.1%);

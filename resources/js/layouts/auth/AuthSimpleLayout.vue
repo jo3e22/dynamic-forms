@@ -25,6 +25,7 @@ defineProps<{
                         >
                             <AppLogoIcon
                                 class="size-9 fill-current text-[var(--foreground)] dark:text-white"
+                                checkColor="#CFB53B"
                             />
                         </div>
                         <span class="sr-only">{{ title }}</span>

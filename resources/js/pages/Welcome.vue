@@ -18,7 +18,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
           </div>
           <div class="flex flex-col">
             <span class="text-xl font-extrabold leading-tight">
-              <span class="">Dynamic</span>
+              <span class="text-black">Dynamic</span>
               <span class="text-tealbrand">Forms</span>
             </span>
             <span class="text-xs text-silverbrand">by jdev.ie</span>
