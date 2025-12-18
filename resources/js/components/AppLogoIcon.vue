@@ -7,6 +7,7 @@ defineOptions({
 
 interface Props {
     className?: HTMLAttributes['class'];
+    checkColor?: string;
 }
 
 defineProps<Props>();
@@ -40,7 +41,7 @@ defineProps<Props>();
         <!-- Checkmark accent -->
         <polyline 
             points="14.5,17 15.5,18 17.5,16" 
-            stroke="currentColor" 
+            :stroke="checkColor || 'currentColor'"
             stroke-width="2" 
             stroke-linecap="round" 
             stroke-linejoin="round"
