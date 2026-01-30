@@ -81,7 +81,7 @@ function tempPrint() {
                 ←
             </button>
             <h1 class="text-xl font-semibold text-gray-800">
-                {{ form.code }}
+                {{ form.title || 'Untitled Form' }}
             </h1>
         </div>
 

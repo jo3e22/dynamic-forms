@@ -183,7 +183,9 @@ function tempPrint() {
       @save="saveColors"
     />
 
-    <main class="container-responsive mt-8">
+    <div class="h-4"></div> <!-- Spacer for sticky header -->
+
+    <main class="container-responsive mt-">
       <!-- Sections -->
       <div 
         v-for="(section, sIdx) in data" 
