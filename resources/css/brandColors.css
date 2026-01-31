@@ -2,7 +2,39 @@
   --color-tealbrand: #104547;
   --color-goldbrand: #CFB53B;
   --color-silverbrand: #848482;
+  --color-bluebrand: #004494;
+  --color-yellowbrand: #FFD617;
+  --color-greybrand; #404040;
 }
+
+
+/* Blue scale */
+.bluebrand-5    { background-color: #f2f5f9; color: var(--color-bluebrand); }
+.bluebrand-25   { background-color: #bfd0e4; color: var(--color-bluebrand); }
+.bluebrand-50   { background-color: #7fa1c9; color: var(--color-bluebrand); }
+.bluebrand-75   { background-color: #4073af; color: var(--color-bluebrand); }
+.bluebrand-100  { background-color: #004494; color: var(--color-bluebrand); }
+.bluebrand-110  { background-color: #003776; color: var(--color-bluebrand); }
+.bluebrand-120  { background-color: #003776; color: var(--color-bluebrand); }
+
+/* Yellow scale */
+.yellowbrand-25  { background-color: var(--yellowbrand-25); color: var(--greybrand-100); }
+.yellowbrand-50  { background-color: var(--yellowbrand-50); color: var(--greybrand-100); }
+.yellowbrand-75  { background-color: var(--yellowbrand-75); color: var(--greybrand-100); }
+.yellowbrand-100 { background-color: var(--yellowbrand-100); color: var(--greybrand-100); }
+.yellowbrand-110 { background-color: var(--yellowbrand-110); color: var(--greybrand-100); }
+.yellowbrand-120 { background-color: var(--yellowbrand-120); color: var(--greybrand-100); }
+
+/* Grey scale */
+.greybrand-5   { background-color: var(--greybrand-5); color: var(--greybrand-100); }
+.greybrand-10  { background-color: var(--greybrand-10); color: var(--greybrand-100); }
+.greybrand-15  { background-color: var(--greybrand-15); color: var(--greybrand-100); }
+.greybrand-25  { background-color: var(--greybrand-25); color: var(--greybrand-100); }
+.greybrand-50  { background-color: var(--greybrand-50); color: var(--greybrand-100); }
+.greybrand-75  { background-color: var(--greybrand-75); color: var(--greybrand-5); }
+.greybrand-100 { background-color: var(--greybrand-100); color: var(--greybrand-5); }
+
+
 
 .tealbrand-50 {
   background-color: #E6F6F6;

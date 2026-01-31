@@ -41,7 +41,7 @@ defineProps<Props>();
         <!-- Checkmark accent -->
         <polyline 
             points="14.5,17 15.5,18 17.5,16" 
-            :stroke="checkColor || '#CFB53B'"
+            stroke="var(--secondary)"
             stroke-width="2" 
             stroke-linecap="round" 
             stroke-linejoin="round"

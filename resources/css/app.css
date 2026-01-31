@@ -76,7 +76,7 @@
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
+        border-color: var(--color-grey-10, currentColor);
     }
 }
 
@@ -91,107 +91,128 @@
 }
 
 :root {
-    /* Brand palette */
-    --ec-blue-120: #003776;
-    --ec-blue-110: #003776;
-    --ec-blue-100: #004494;
-    --ec-blue-75:  #4073AF;
-    --ec-blue-50:  #7FA1C9;
-    --ec-blue-25:  #BFD0E4;
-    --ec-blue-5:   #F2F5F9;
+    /* Primitive color scales */
+    --grey-5: #f5f5f5;
+    --grey-10: #ebebeb;
+    --grey-15: #e3e3e3;
+    --grey-25: #cfcfcf;
+    --grey-50: #9f9f9f;
+    --grey-75: #707070;
+    --grey-100: #404040;
 
-    --ec-yellow-120: #F8AE21;
-    --ec-yellow-110: #FBC11D;
-    --ec-yellow-100: #ffd617;
-    --ec-yellow-75:  #FFDE39;
-    --ec-yellow-50:  #FFE879;
-    --ec-yellow-25:  #FFF4BB;
+    --blue-5:  #f2f5f9;
+    --blue-25: #bfd0e4;
+    --blue-50: #7fa1c9;
+    --blue-75: #4073af;
+    --blue-100: #004494;
+    --blue-110: #003776;
+    --blue-120: #003776;
 
-    --ec-grey-100: #404040;
-    --ec-grey-75:  #707070;
-    --ec-grey-50:  #9F9F9F;
-    --ec-grey-25:  #CFCFCF;
-    --ec-grey-15:  #E3E3E3;
-    --ec-grey-10:  #EBEBEB;
-    --ec-grey-5:   #F5F5F5;
+    --yellow-25: #fff4bb;
+    --yellow-50: #ffe879;
+    --yellow-75: #ffde39;
+    --yellow-100: #ffd617;
+    --yellow-110: #fbc11d;
+    --yellow-120: #f8ae21;
 
+    --red-n: #da2131;
+    --green-n: #467a39;
+    --orange-n: #f29527;
+    --blue-n: #006fb4;
+    --white: #ffffff;
     --black: #000000;
-    --white: #FFFFFF;
 
-    /* Notification palette */
-    --ec-blue-n:   #006FB4;
-    --ec-orange-n: #F29527;
-    --ec-green-n:  #467A39;
-    --ec-red-n:    #DA2131;
+    /* Extra colors */
+    --dark-blue: #00002e;
 
-    /* Core UI roles */
+    /* Semantic tokens */
     --background: var(--white);
-    --foreground: var(--ec-grey-100);
-    --primary: var(--ec-blue-100);
-    --primary-foreground: var(--white);
-    --secondary: var(--ec-yellow-100);
-    --secondary-foreground: var(--ec-grey-100);
-    --muted: var(--ec-grey-10);
-    --muted-foreground: var(--ec-grey-75);
-    --accent: var(--ec-yellow-100);
-    --accent-foreground: var(--ec-grey-100);
-    --destructive: var(--ec-red-n);
-    --destructive-foreground: var(--white);
-    --border: var(--ec-grey-15);
-    --input: var(--ec-grey-10);
-    --ring: var(--ec-yellow-100);
+    --foreground: var(--grey-100);
+    --card: var(--white);
+    --card-foreground: var(--grey-100);
+    --popover: var(--white);
+    --popover-foreground: var(--blue-100);
 
-    /* Chart/extra roles (customize as needed) */
-    --chart-1: var(--ec-blue-100);
-    --chart-2: var(--ec-yellow-100);
-    --chart-3: var(--ec-grey-50);
-    --chart-4: var(--ec-blue-75);
-    --chart-5: var(--ec-yellow-75);
+    --primary: var(--blue-100);
+    --primary-foreground: var(--white);
+
+    --secondary: var(--yellow-100);
+    --secondary-foreground: var(--grey-100);
+
+    --muted: var(--grey-5);
+    --muted-foreground: var(--grey-75);
+
+    --accent: var(--yellow-25);
+    --accent-foreground: var(--grey-100);
+
+    --destructive: var(--red-n);
+    --destructive-foreground: var(--white);
+
+    --border: var(--grey-10);
+    --input: var(--grey-5);
+    --ring: var(--yellow-50);
+
+    --chart-1: var(--blue-75);
+    --chart-2: var(--yellow-75);
+    --chart-3: var(--grey-25);
+    --chart-4: var(--blue-50);
+    --chart-5: var(--yellow-25);
 
     --radius: 0.5rem;
 
-    /* Sidebar example */
-    --sidebar-background: var(--ec-blue-100);
-    --sidebar-foreground: var(--white);
-    --sidebar-primary: var(--ec-yellow-100);
-    --sidebar-primary-foreground: var(--ec-blue-100);
-    --sidebar-accent: var(--ec-grey-25);
-    --sidebar-accent-foreground: var(--ec-grey-100);
-    --sidebar-border: var(--ec-grey-15);
-    --sidebar-ring: var(--ec-yellow-100);
-    --sidebar: var(--ec-blue-5);
+    --sidebar-background: var(--blue-5);
+    --sidebar-foreground: var(--black);
+    --sidebar-primary: var(--blue-50);
+    --sidebar-primary-foreground: var(--black);
+    --sidebar-accent: var(--blue-25);
+    --sidebar-accent-foreground: var(--black);
+    --sidebar-border: var(--grey-10);
+    --sidebar-ring: var(--yellow-50);
+    --sidebar: var(--blue-50);
 }
 
 .dark {
-    --background: var(--ec-grey-100);
+    --background: var(--black);
     --foreground: var(--white);
-    --card: var(--ec-blue-120);
+    --card: var(--blue-120);
     --card-foreground: var(--white);
-    --popover: var(--ec-blue-120);
+    --popover: var(--blue-120);
     --popover-foreground: var(--white);
-    --primary: var(--ec-yellow-100);
-    --primary-foreground: var(--ec-blue-100);
-    --secondary: var(--ec-grey-75);
-    --secondary-foreground: var(--white);
-    --muted: var(--ec-grey-25);
-    --muted-foreground: var(--ec-grey-5);
-    --accent: var(--ec-yellow-75);
-    --accent-foreground: var(--ec-grey-100);
-    --destructive: var(--ec-red-n);
-    --destructive-foreground: var(--white);
-    --border: var(--ec-grey-25);
-    --input: var(--ec-grey-15);
-    --ring: var(--ec-yellow-100);
 
-    --sidebar-background: var(--ec-blue-120);
-    --sidebar-foreground: var(--ec-yellow-100);
-    --sidebar-primary: var(--ec-yellow-100);
-    --sidebar-primary-foreground: var(--ec-blue-120);
-    --sidebar-accent: var(--ec-grey-50);
+    --primary: var(--yellow-50);
+    --primary-foreground: var(--blue-120);
+
+    --secondary: var(--grey-50);
+    --secondary-foreground: var(--white);
+
+    --muted: var(--grey-75);
+    --muted-foreground: var(--grey-10);
+
+    --accent: var(--yellow-75);
+    --accent-foreground: var(--black);
+
+    --destructive: var(--red-n);
+    --destructive-foreground: var(--white);
+
+    --border: var(--grey-50);
+    --input: var(--grey-75);
+    --ring: var(--yellow-75);
+
+    --chart-1: var(--blue-50);
+    --chart-2: var(--yellow-25);
+    --chart-3: var(--grey-15);
+    --chart-4: var(--blue-100);
+    --chart-5: var(--yellow-25);
+
+    --sidebar-background: var(--blue-120);
+    --sidebar-foreground: var(--yellow-50);
+    --sidebar-primary: var(--yellow-50);
+    --sidebar-primary-foreground: var(--blue-120);
+    --sidebar-accent: var(--grey-25);
     --sidebar-accent-foreground: var(--white);
-    --sidebar-border: var(--ec-grey-25);
-    --sidebar-ring: var(--ec-yellow-100);
-    --sidebar: var(--ec-blue-25);
+    --sidebar-border: var(--grey-50);
+    --sidebar-ring: var(--yellow-75);
+    --sidebar: var(--blue-100);
 }
 
 @layer base {
