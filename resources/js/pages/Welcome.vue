@@ -6,7 +6,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 </script>
 
 <template>
-  <Head title="flow - jdev.ie" />
+  <Head title="" />
   
   <div class="min-h-screen bg-white">
     <!-- Navigation -->
