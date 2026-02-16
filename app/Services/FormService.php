@@ -24,6 +24,9 @@ class FormService
         // Create first section
         $this->createDefaultSection($form);
 
+        // Create default settings
+        $form->settings()->create(\App\Models\FormSettings::defaults());
+
         return $form;
     }
 

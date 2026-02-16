@@ -138,18 +138,29 @@ class FormController extends Controller
 
     public function viewform(Form $form)
     {
-        // Check if form is shareable
-        if ($form->status !== Form::STATUS_OPEN) {
-            abort(403, 'This form is not accepting responses');
+        // ── Step 1: Is the form accepting responses? ──
+        if (!$form->isAcceptingResponses()) {
+            return Inertia::render('forms/FormClosed', [
+                'form' => [
+                    'id' => $form->id,
+                    'code' => $form->code,
+                    'status' => $form->computeStatus(),
+                    'title' => $form->title,
+                ],
+                'message' => $form->closedReason(),
+            ]);
         }
 
-        // Check sharing settings
+        // ── Step 2: Does the user have permission? ──
         $user = auth()->user();
-        if (!$form->isGuestAllowed() && !$user) {
-            abort(403, 'You must be logged in to view this form');
+
+        if ($form->requiresAuthentication() && !$user) {
+            return redirect()->guest(route('login', ['redirect' => url()->current()]));
         }
 
-        $submission = $this->submissionService->getOrCreateSubmission(auth()->user(), $form);
+        // ── Step 3: Build the form view ──
+        $settings = $form->getOrCreateSettings();
+        $submission = $this->submissionService->getOrCreateSubmission($user, $form);
         $submissionFields = $submission->submissionFields;
         $data = $this->formService->buildFormData($form);
 
@@ -157,11 +168,12 @@ class FormController extends Controller
             'form' => [
                 'id' => $form->id,
                 'code' => $form->code,
-                'status' => $form->status,
+                'status' => $form->computeStatus(),
                 'primary_color' => $form->primary_color,
                 'secondary_color' => $form->secondary_color,
-                'sharing_type' => $form->sharing_type,
+                'sharing_type' => $settings->sharing_type,
                 'is_email_required' => $form->isEmailRequired(),
+                'is_guest_allowed' => $form->isGuestAllowed(),
             ],
             'data' => $data,
             'submission' => [

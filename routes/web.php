@@ -31,10 +31,11 @@ Route::get('dashboard', function () {
 // IMPORTANT: Specific routes must come BEFORE dynamic routes
 Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create');
 
-Route::prefix('forms/{form}/settings')->group(function () {
-    Route::get('/', [FormSettingsController::class, 'show']);
-    Route::post('/', [FormSettingsController::class, 'store']);
-    Route::put('/', [FormSettingsController::class, 'update']);
+// Form settings (owner only)
+Route::prefix('forms/{form}/settings')->middleware(['auth'])->group(function () {
+    Route::get('/json', [FormSettingsController::class, 'getSettings'])->name('forms.settings.json');
+    Route::post('/', [FormSettingsController::class, 'store'])->name('forms.settings.store');
+    Route::put('/', [FormSettingsController::class, 'update'])->name('forms.settings.update');
 });
 
 // Individual form routes (dynamic {form} parameter)

@@ -1,19 +1,23 @@
+<!-- filepath: resources/js/pages/forms/FormDashboard.vue -->
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Eye, Trash2, FileText, CheckCircle2, Clock } from 'lucide-vue-next';
+import { Edit, Eye, Trash2, FileText, CheckCircle2, Clock, Settings } from 'lucide-vue-next';
 import StatsCard from '@/components/common/StatsCard.vue';
 import SubmissionCard from '@/components/submissions/SubmissionCard.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import DashboardContainer from '@/components/common/DashboardContainer.vue';
+import FormSettingsPanel from '@/components/form-builder/FormSettingsPanel.vue';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
+} from '@/components/ui/dialog';
 import { useFormStatus } from '@/composables/useFormStatus';
 import { useDateTime } from '@/composables/useDateTime';
-import FormSettingsPanel from '@/components/form-builder/FormSettingsPanel.vue';
 import { ref } from 'vue';
-import type { FormSettingsDTO } from '@/types/formSettings'; // or the correct path
+import type { FormSettingsDTO } from '@/types/formSettings';
 
 
 interface Form {
@@ -46,22 +50,12 @@ const props = defineProps<{
 const showSettings = ref(false);
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Forms',
-        href: '/forms',
-    },
-    {
-        title: props.form.title,
-        href: `/forms/${props.form.code}`,
-    },
+    { title: 'Forms', href: '/forms' },
+    { title: props.form.title, href: `/forms/${props.form.code}` },
 ];
 
 const { getStatusColor } = useFormStatus();
 const { formatDate } = useDateTime();
-
-function goToSettings() {
-  router.visit(`/forms/${props.form.code}/settings`);
-}
 
 function editForm() {
   router.visit(`/forms/${props.form.code}/edit`);
@@ -78,11 +72,14 @@ function viewSubmission(code: string) {
 function deleteForm() {
   if (confirm(`Are you sure you want to delete "${props.form.title}"?`)) {
     router.delete(`/forms/${props.form.code}`, {
-      onSuccess: () => {
-        router.visit('/forms');
-      },
+      onSuccess: () => router.visit('/forms'),
     });
   }
+}
+
+function onSettingsSaved() {
+  // Reload page data to reflect new computed status
+  router.reload();
 }
 </script>
 
@@ -105,7 +102,10 @@ function deleteForm() {
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <Button @click="showSettings = true">Settings</Button>
+                    <Button @click="showSettings = true" variant="outline" class="gap-2">
+                        <Settings :size="18" />
+                        Settings
+                    </Button>
                     <Button @click="editForm" variant="default" class="gap-2">
                         <Edit :size="18" />
                         Edit Form
@@ -151,7 +151,6 @@ function deleteForm() {
                     </Button>
                 </template>
 
-                <!-- Empty State -->
                 <EmptyState
                     v-if="recentSubmissions.length === 0"
                     :icon="CheckCircle2"
@@ -159,7 +158,6 @@ function deleteForm() {
                     description="Responses will appear here once users submit the form"
                 />
 
-                <!-- Submissions List -->
                 <div v-else class="space-y-3">
                     <SubmissionCard
                         v-for="submission in recentSubmissions"
@@ -172,11 +170,18 @@ function deleteForm() {
         </div>
     </AppLayout>
 
-    <div v-if="showSettings && form.code" class="my-4">
-    <FormSettingsPanel
-        :formCode="form.code"
-        :initialSettings="form.settings || {}"
-    />
-    <Button @click="showSettings = false" class="mt-2">Close</Button>
-    </div>
+    <!-- Settings Dialog -->
+    <Dialog v-model:open="showSettings">
+        <DialogContent class="max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+                <DialogTitle>Form Settings</DialogTitle>
+                <DialogDescription>Configure publishing, sharing, and submission rules.</DialogDescription>
+            </DialogHeader>
+            <FormSettingsPanel
+                v-if="showSettings"
+                :formCode="form.code"
+                @saved="onSettingsSaved"
+            />
+        </DialogContent>
+    </Dialog>
 </template>

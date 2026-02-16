@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Form;
 use App\Models\Submission;
+use App\Models\SubmissionField;
 use App\Models\User;
 use App\Events\FormSubmitted;
 
@@ -39,7 +40,50 @@ class SubmissionService
     }
 
     /**
-     * Process and save submission fields
+     * Create empty submission fields for all form fields
+     */
+    protected function createSubmissionFields(Submission $submission): void
+    {
+        $formFields = $submission->form->fields()->get();
+
+        foreach ($formFields as $field) {
+            SubmissionField::create([
+                'submission_id' => $submission->id,
+                'form_field_id' => $field->id,
+                'answer' => null,
+            ]);
+        }
+    }
+
+    /**
+     * Save/update submission fields from request data
+     */
+    protected function saveSubmissionFields(Submission $submission, array $submissionFields): void
+    {
+        foreach ($submissionFields as $fieldData) {
+            // Find or create the submission field
+            $submissionField = SubmissionField::where('submission_id', $submission->id)
+                ->where('form_field_id', $fieldData['form_field_id'])
+                ->first();
+
+            if ($submissionField) {
+                // Update existing
+                $submissionField->update([
+                    'answer' => $fieldData['answer'] ?? null,
+                ]);
+            } else {
+                // Create new
+                SubmissionField::create([
+                    'submission_id' => $submission->id,
+                    'form_field_id' => $fieldData['form_field_id'],
+                    'answer' => $fieldData['answer'] ?? null,
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Process and save submission with guest info
      */
     public function saveSubmissionWithGuestInfo(
         Submission $submission,
@@ -54,7 +98,7 @@ class SubmissionService
         }
 
         // Check for duplicate responses if not allowed
-        if (!$submission->form->allow_duplicate_responses && $email) {
+        if (!$submission->form->getOrCreateSettings()->allow_duplicate_responses && $email) {
             if (Submission::hasDuplicateEmail($submission->form, $email)) {
                 throw new \InvalidArgumentException('This email has already submitted a response');
             }
