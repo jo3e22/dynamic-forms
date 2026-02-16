@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { Eye, Share2, Trash2, Palette, Save } from 'lucide-vue-next';
+import { Eye, Share2, Trash2, Palette, Save, Settings2Icon, SettingsIcon } from 'lucide-vue-next';
 import type { FormDTO } from '@/types/forms';
 
 const props = defineProps<{
@@ -14,6 +14,7 @@ const emit = defineEmits<{
     saveForm: [];
     formjson: [];
     tempPrint: [];
+    openSettings: [];
 }>();
 
 const isDev = computed(() => import.meta.env.DEV);
@@ -67,7 +68,12 @@ function formjson() {
 function tempPrint() {
     emit('tempPrint');
 }
+
+function openSettingsPanel() {
+    emit('openSettings');
+}
 </script>
+
 
 <template>
     <header class="bg-white shadow-md px-6 py-4 flex items-center justify-between sticky top-0 z-20">
@@ -87,7 +93,7 @@ function tempPrint() {
 
         <!-- Right: Action Buttons -->
         <div class="flex items-center gap-2">
-            <!-- Debug buttons (remove in production) -->
+            <!-- Debug buttons (remove in production)
             <button 
                 v-if="isDev"
                 @click="formjson" 
@@ -102,6 +108,7 @@ function tempPrint() {
             >
                 Debug
             </button>
+            -->
 
             <!-- Main action buttons -->
             <Button
@@ -109,6 +116,8 @@ function tempPrint() {
                 variant="default"
                 size="sm"
                 class="gap-2"
+                title="Save"
+                style="cursor: pointer;"
             >
                 <Save :size="16" />
                 Save
@@ -119,9 +128,10 @@ function tempPrint() {
                 variant="outline"
                 size="sm"
                 class="gap-2"
+                title="Style"
+                style="cursor: pointer;"
             >
                 <Palette :size="16" />
-                Style
             </Button>
 
             <Button
@@ -129,9 +139,10 @@ function tempPrint() {
                 variant="outline"
                 size="sm"
                 class="gap-2"
+                title="Preview"
+                style="cursor: pointer;"
             >
                 <Eye :size="16" />
-                Preview
             </Button>
 
             <Button
@@ -139,11 +150,13 @@ function tempPrint() {
                 variant="outline"
                 size="sm"
                 class="gap-2"
+                title="Copy link"
+                style="cursor: pointer;"
             >
                 <Share2 :size="16" />
-                Share
             </Button>
 
+            <!--
             <Button
                 @click="viewSubmissions"
                 variant="outline"
@@ -153,15 +166,28 @@ function tempPrint() {
                 <Eye :size="16" />
                 Submissions
             </Button>
+            -->
+
+            <Button
+                @click="openSettingsPanel"
+                variant="outline"
+                size="sm"
+                class="gap-2"
+                title="View submissions"
+                style="cursor: pointer;"
+            >
+                <SettingsIcon :size="16" />
+            </Button>
 
             <Button
                 @click="deleteForm"
                 variant="destructive"
                 size="sm"
                 class="gap-2"
+                title="Delete"
+                style="cursor: pointer;"
             >
                 <Trash2 :size="16" />
-                Delete
             </Button>
         </div>
     </header>

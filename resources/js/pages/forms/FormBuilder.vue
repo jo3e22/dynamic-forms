@@ -13,11 +13,19 @@ import {
 } from '@/components/form-builder';
 import { FIELD_COMPONENTS, getFieldComponent } from '@/components/form-builder/fields';
 import { Toast } from '@/components/ui/toast';
+import FormSettingsPanel from '@/components/form-builder/FormSettingsPanel.vue';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
+} from '@/components/ui/dialog';
+import { useFormStatus } from '@/composables/useFormStatus';
+import { useDateTime } from '@/composables/useDateTime';
+import type { FormSettingsDTO } from '@/types/formSettings';
 
 const props = defineProps<FormBuilderProps>();
 
 const page = usePage();
 const showColorPicker = ref(false);
+const showSettings = ref(false);
 
 const savedMessage = ref('');
 const toastKey = ref(0);
@@ -157,6 +165,16 @@ function tempPrint() {
     totalSections: totalSections.value,
   });
 }
+
+function openSettingsPanel() {
+  showSettings.value = true;
+}
+
+function onSettingsSaved() {
+  // Reload page data to reflect new computed status
+  router.reload();
+}
+
 </script>
 
 <template>
@@ -173,6 +191,7 @@ function tempPrint() {
       @saveForm="saveForm"
       @formjson="formjson"
       @tempPrint="tempPrint"
+      @openSettings="openSettingsPanel"
     />
 
     <FormBuilderColorPicker
@@ -331,6 +350,22 @@ function tempPrint() {
       </div>
     </main>
   </div>
+
+  <!-- Settings Dialog -->
+  <Dialog v-model:open="showSettings">
+      <DialogContent class="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+              <DialogTitle>Form Settings</DialogTitle>
+              <DialogDescription>Configure publishing, sharing, and submission rules.</DialogDescription>
+          </DialogHeader>
+          <FormSettingsPanel
+              v-if="showSettings"
+              :formCode="form.code"
+              @saved="onSettingsSaved"
+          />
+      </DialogContent>
+  </Dialog>
+
 </template>
 
 <style scoped>
