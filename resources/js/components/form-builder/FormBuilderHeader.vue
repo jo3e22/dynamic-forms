@@ -4,6 +4,7 @@ import { router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Eye, Share2, Trash2, Palette, Save, Settings2Icon, SettingsIcon } from 'lucide-vue-next';
 import type { FormDTO } from '@/types/forms';
+import { open } from 'fs';
 
 const props = defineProps<{
     form: FormDTO;
@@ -69,11 +70,10 @@ function tempPrint() {
     emit('tempPrint');
 }
 
-function openSettingsPanel() {
+function openSettings() {
     emit('openSettings');
 }
 </script>
-
 
 <template>
     <header class="bg-white shadow-md px-6 py-4 flex items-center justify-between sticky top-0 z-20">
@@ -116,8 +116,6 @@ function openSettingsPanel() {
                 variant="default"
                 size="sm"
                 class="gap-2"
-                title="Save"
-                style="cursor: pointer;"
             >
                 <Save :size="16" />
                 Save
@@ -139,7 +137,7 @@ function openSettingsPanel() {
                 variant="outline"
                 size="sm"
                 class="gap-2"
-                title="Preview"
+                title="Preview Form"
                 style="cursor: pointer;"
             >
                 <Eye :size="16" />
@@ -150,41 +148,42 @@ function openSettingsPanel() {
                 variant="outline"
                 size="sm"
                 class="gap-2"
-                title="Copy link"
+                title="Share"
                 style="cursor: pointer;"
             >
                 <Share2 :size="16" />
             </Button>
 
-            <!--
+            <Button
+                @click="openSettings"
+                variant="outline"
+                size="sm"
+                class="gap-2"
+                title="Settings"
+                style="cursor: pointer;"
+            >
+                <SettingsIcon :size="16" />
+            </Button>
+
+            <!----
             <Button
                 @click="viewSubmissions"
                 variant="outline"
                 size="sm"
                 class="gap-2"
-            >
-                <Eye :size="16" />
-                Submissions
-            </Button>
-            -->
-
-            <Button
-                @click="openSettingsPanel"
-                variant="outline"
-                size="sm"
-                class="gap-2"
-                title="View submissions"
+                title="Submissions"
                 style="cursor: pointer;"
             >
-                <SettingsIcon :size="16" />
+                <Eye :size="16" />
             </Button>
+            -->
 
             <Button
                 @click="deleteForm"
                 variant="destructive"
                 size="sm"
                 class="gap-2"
-                title="Delete"
+                title="Delete Form"
                 style="cursor: pointer;"
             >
                 <Trash2 :size="16" />
