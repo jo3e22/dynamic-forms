@@ -116,6 +116,8 @@ function openSettings() {
                 variant="default"
                 size="sm"
                 class="gap-2"
+                title="Save Form"
+                style="cursor: pointer;"
             >
                 <Save :size="16" />
                 Save
