@@ -13,9 +13,17 @@ return new class extends Migration
     {
         Schema::create('forms', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->json('schema'); // array of questions
+            $table->uuid('code')->unique();
+            $table->unsignedBigInteger('user_id');
+            $table->char('status', 20);
+            $table->string('primary_color', 7)->nullable();
+            $table->string('secondary_color', 7)->nullable();
+            $table->softDeletes();
             $table->timestamps();
+        });
+
+        Schema::table('forms', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
         
     }

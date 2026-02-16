@@ -1,0 +1,160 @@
+@theme {
+  --color-tealbrand: #104547;
+  --color-goldbrand: #CFB53B;
+  --color-silverbrand: #848482;
+  --color-bluebrand: #004494;
+  --color-yellowbrand: #FFD617;
+  --color-greybrand; #404040;
+}
+
+
+/* Blue scale */
+.bluebrand-5    { background-color: #f2f5f9; color: var(--color-bluebrand); }
+.bluebrand-25   { background-color: #bfd0e4; color: var(--color-bluebrand); }
+.bluebrand-50   { background-color: #7fa1c9; color: var(--color-bluebrand); }
+.bluebrand-75   { background-color: #4073af; color: var(--color-bluebrand); }
+.bluebrand-100  { background-color: #004494; color: var(--color-bluebrand); }
+.bluebrand-110  { background-color: #003776; color: var(--color-bluebrand); }
+.bluebrand-120  { background-color: #003776; color: var(--color-bluebrand); }
+
+/* Yellow scale */
+.yellowbrand-25  { background-color: var(--yellowbrand-25); color: var(--greybrand-100); }
+.yellowbrand-50  { background-color: var(--yellowbrand-50); color: var(--greybrand-100); }
+.yellowbrand-75  { background-color: var(--yellowbrand-75); color: var(--greybrand-100); }
+.yellowbrand-100 { background-color: var(--yellowbrand-100); color: var(--greybrand-100); }
+.yellowbrand-110 { background-color: var(--yellowbrand-110); color: var(--greybrand-100); }
+.yellowbrand-120 { background-color: var(--yellowbrand-120); color: var(--greybrand-100); }
+
+/* Grey scale */
+.greybrand-5   { background-color: var(--greybrand-5); color: var(--greybrand-100); }
+.greybrand-10  { background-color: var(--greybrand-10); color: var(--greybrand-100); }
+.greybrand-15  { background-color: var(--greybrand-15); color: var(--greybrand-100); }
+.greybrand-25  { background-color: var(--greybrand-25); color: var(--greybrand-100); }
+.greybrand-50  { background-color: var(--greybrand-50); color: var(--greybrand-100); }
+.greybrand-75  { background-color: var(--greybrand-75); color: var(--greybrand-5); }
+.greybrand-100 { background-color: var(--greybrand-100); color: var(--greybrand-5); }
+
+
+
+.tealbrand-50 {
+  background-color: #E6F6F6;
+  color: var(--color-tealbrand);
+}
+.tealbrand-100 {
+  background-color: #BFE8E8;
+  color: var(--color-tealbrand);
+}
+.tealbrand-200 {
+  background-color: #99D9D9;
+  color: var(--color-tealbrand);
+}
+.tealbrand-300 {
+  background-color: #4DC0C0;
+  color: var(--color-tealbrand);
+}
+.tealbrand-400 {
+  background-color: #26A3A3;
+  color: var(--color-tealbrand);
+}
+.tealbrand-500 {
+  background-color: #008787;
+  color: var(--color-tealbrand);
+}
+.tealbrand-600 {
+  background-color: #007373;
+  color: var(--color-tealbrand);
+}
+.tealbrand-700 {
+  background-color: #005F5F;
+  color: var(--color-tealbrand);
+}
+.tealbrand-800 {
+  background-color: #004C4C;
+  color: var(--color-tealbrand);
+}
+.tealbrand-900 {
+  background-color: #003939;
+  color: var(--color-tealbrand);
+}
+
+.goldbrand-50 {
+  background-color: #FFF9E6;
+  color: var(--color-goldbrand);
+}
+.goldbrand-100 {
+  background-color: #FFF2BF;
+  color: var(--color-goldbrand);
+}
+.goldbrand-200 {
+  background-color: #FFEB99;
+  color: var(--color-goldbrand);
+}
+.goldbrand-300 {
+  background-color: #FFE34D;
+  color: var(--color-goldbrand);
+}
+.goldbrand-400 {
+  background-color: #FFDB26;
+  color: var(--color-goldbrand);
+}
+.goldbrand-500 {
+  background-color: #FFD300;
+  color: var(--color-goldbrand);
+}
+.goldbrand-600 {
+  background-color: #CCAA00;
+  color: var(--color-goldbrand);
+}
+.goldbrand-700 {
+  background-color: #998000;
+  color: var(--color-goldbrand);
+}
+.goldbrand-800 {
+  background-color: #665500;
+  color: var(--color-goldbrand);
+}
+.goldbrand-900 {
+  background-color: #332B00;
+  color: var(--color-goldbrand);
+}
+
+.silverbrand-50 {
+  background-color: #F5F5F5;
+  color: var(--color-silverbrand);
+}
+.silverbrand-100 {
+  background-color: #E0E0E0;
+  color: var(--color-silverbrand);
+}
+.silverbrand-200 {
+  background-color: #CCCCCC;
+  color: var(--color-silverbrand);
+}
+.silverbrand-300 {
+  background-color: #B3B3B3;
+  color: var(--color-silverbrand);
+}
+.silverbrand-400 {
+  background-color: #999999;
+  color: var(--color-silverbrand);
+}
+.silverbrand-500 {
+  background-color: #808080;
+  color: var(--color-silverbrand);
+}
+.silverbrand-600 {
+  background-color: #666666;
+  color: var(--color-silverbrand);
+}
+.silverbrand-700 {
+  background-color: #4D4D4D;
+  color: var(--color-silverbrand);
+}
+.silverbrand-800 {
+  background-color: #333333;
+  color: var(--color-silverbrand);
+}
+.silverbrand-900 {
+  background-color: #1A1A1A;
+  color: var(--color-silverbrand);
+}
