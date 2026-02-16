@@ -23,9 +23,11 @@ import type { FormSettingsDTO } from '@/types/formSettings';
 
 const props = defineProps<FormBuilderProps>();
 
+const showSettings = ref(false);
+const { formatDate } = useDateTime();
+
 const page = usePage();
 const showColorPicker = ref(false);
-const showSettings = ref(false);
 
 const savedMessage = ref('');
 const toastKey = ref(0);
@@ -166,15 +168,14 @@ function tempPrint() {
   });
 }
 
-function openSettingsPanel() {
-  showSettings.value = true;
+function openSettings() {
+    showSettings.value = true;
 }
-
-function onSettingsSaved() {
-  // Reload page data to reflect new computed status
-  router.reload();
+function onSettingsSaved(updatedSettings: FormSettingsDTO) {
+    // Handle any updates needed after settings are saved
+    showSettings.value = false;
+    alert('Settings saved successfully!');
 }
-
 </script>
 
 <template>
@@ -191,7 +192,7 @@ function onSettingsSaved() {
       @saveForm="saveForm"
       @formjson="formjson"
       @tempPrint="tempPrint"
-      @openSettings="openSettingsPanel"
+      @openSettings="openSettings"
     />
 
     <FormBuilderColorPicker
