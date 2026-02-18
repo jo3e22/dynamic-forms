@@ -20,6 +20,11 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+// Privacy Policy (public)
+Route::get('/privacy-policy', function () {
+    return Inertia::render('PrivacyPolicy');
+})->name('privacy-policy');
+
 // Forms index (main dashboard)
 Route::get('/forms', [FormController::class, 'index'])->middleware(['auth', 'verified'])->name('forms.index');
 

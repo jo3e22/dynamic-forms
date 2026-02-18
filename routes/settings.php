@@ -25,4 +25,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
         ->name('two-factor.show');
+
+    Route::get('settings/privacy', function () {
+        return Inertia::render('settings/Privacy');
+    })->name('privacy.edit');
 });

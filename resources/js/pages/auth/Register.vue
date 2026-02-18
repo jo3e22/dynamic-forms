@@ -1,14 +1,19 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import RegisteredUserController from '@/actions/App/Http/Controllers/Auth/RegisteredUserController';
 import InputError from '@/components/common/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
 import { Form, Head } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+
+const gdprConsent = ref(false);
+const marketingConsent = ref(false);
 </script>
 
 <template>
@@ -82,11 +87,56 @@ import { LoaderCircle } from 'lucide-vue-next';
                     <InputError :message="errors.password_confirmation" />
                 </div>
 
+                <!-- GDPR Consent -->
+                <div class="space-y-3 pt-2 border-t">
+                    <div class="flex items-start space-x-3">
+                        <Checkbox
+                            id="gdpr-consent"
+                            v-model="gdprConsent"
+                            class="mt-1"
+                        />
+                        <div class="space-y-1 flex-1">
+                            <Label 
+                                for="gdpr-consent" 
+                                class="text-sm font-medium cursor-pointer"
+                            >
+                                I consent to data processing *
+                            </Label>
+                            <p class="text-xs text-gray-600">
+                                I agree to the processing of my personal data according to the privacy policy
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start space-x-3">
+                        <Checkbox
+                            id="marketing-consent"
+                            v-model="marketingConsent"
+                            class="mt-1"
+                        />
+                        <div class="space-y-1 flex-1">
+                            <Label 
+                                for="marketing-consent" 
+                                class="text-sm font-medium cursor-pointer"
+                            >
+                                Send me product updates
+                            </Label>
+                            <p class="text-xs text-gray-600">
+                                I'd like to receive emails about new features and product updates
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hidden inputs for form submission -->
+                <input type="hidden" name="gdpr_consent" :value="gdprConsent ? '1' : '0'" />
+                <input type="hidden" name="marketing_consent" :value="marketingConsent ? '1' : '0'" />
+
                 <Button
                     type="submit"
                     class="mt-2 w-full"
                     tabindex="5"
-                    :disabled="processing"
+                    :disabled="!gdprConsent || processing"
                     data-test="register-user-button"
                 >
                     <LoaderCircle
