@@ -23,6 +23,13 @@ class Submission extends Model
         'status',
         'email',
         'guest_name',
+        'retention_until',
+        'contains_pii',
+    ];
+
+    protected $casts = [
+        'retention_until' => 'datetime',
+        'contains_pii' => 'boolean',
     ];
 
     public function getRouteKeyName()
@@ -60,5 +67,26 @@ class Submission extends Model
             ->where('email', $email)
             ->where('status', '!=', self::STATUS_DRAFT)
             ->exists();
+    }
+
+    /**
+     * Check if this submission's retention period has expired
+     */
+    public function isRetentionExpired(): bool
+    {
+        return $this->retention_until && $this->retention_until->isPast();
+    }
+
+    /**
+     * Get time remaining before deletion (if any)
+     */
+    public function daysUntilDeletion(): ?int
+    {
+        if (!$this->retention_until) {
+            return null;
+        }
+        
+        $days = now()->diffInDays($this->retention_until);
+        return max(0, $days);
     }
 }

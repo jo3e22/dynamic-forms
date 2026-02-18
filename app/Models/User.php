@@ -32,6 +32,10 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'consent_gdpr_at',
+        'consent_marketing_at',
+        'requested_deletion_at',
+        'gdpr_preferences',
     ];
 
     /**
@@ -58,6 +62,10 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'is_admin' => 'boolean',
+            'consent_gdpr_at' => 'datetime',
+            'consent_marketing_at' => 'datetime',
+            'requested_deletion_at' => 'datetime',
+            'gdpr_preferences' => 'json',
         ];
     }
 
@@ -114,5 +122,47 @@ class User extends Authenticatable
         // Check via OrganisationService
         return app(\App\Services\OrganisationService::class)
             ->userHasPermission($this, $organisation, $permission);
+    }
+
+    /**
+     * GDPR: Check if user has given consent
+     */
+    public function hasConsentedToGDPR(): bool
+    {
+        return $this->consent_gdpr_at !== null;
+    }
+
+    /**
+     * GDPR: Request account deletion
+     */
+    public function requestDeletion(): void
+    {
+        $this->update(['requested_deletion_at' => now()]);
+    }
+
+    /**
+     * GDPR: Check if user is marked for deletion
+     */
+    public function isMarkedForDeletion(): bool
+    {
+        return $this->requested_deletion_at !== null;
+    }
+
+    /**
+     * GDPR-related logs
+     */
+    public function gdprAuditLogs()
+    {
+        return $this->hasMany(\App\Models\GDPR\GDPRAuditLog::class);
+    }
+
+    public function gdprConsentLogs()
+    {
+        return $this->hasMany(\App\Models\GDPR\GDPRConsentLog::class);
+    }
+
+    public function gdprDataAccessRequests()
+    {
+        return $this->hasMany(\App\Models\GDPR\GDPRDataSubjectAccessRequest::class);
     }
 }
