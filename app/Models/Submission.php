@@ -23,6 +23,9 @@ class Submission extends Model
         'status',
         'email',
         'guest_name',
+        'source',
+        'api_client',
+        'meta',
     ];
 
     public function getRouteKeyName()

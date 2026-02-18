@@ -35,6 +35,16 @@ class Form extends Model
         'template_id',
         'primary_color',
         'secondary_color',
+        'schema',
+        'api_key',
+        'api_config',
+        'source',
+        'code',
+    ];
+
+    protected $casts = [
+        'schema' => 'json',
+        'api_config' => 'json',
     ];
 
     public function getRouteKeyName()
@@ -229,6 +239,54 @@ class Form extends Model
             static::STATUS_CLOSED => ['label' => 'Closed', 'color' => 'pink'],
         ];
     }
+
+    // ── API Methods ────────────────────────────────
+
+    /**
+     * Generate a unique API key for this form
+     */
+    public function generateApiKey(): string
+    {
+        $this->api_key = 'form_sk_' . Str::random(32);
+        $this->save();
+        return $this->api_key;
+    }
+
+    /**
+     * Verify API key validity
+     */
+    public static function findByApiKey(string $apiKey): ?self
+    {
+        return static::where('api_key', $apiKey)->first();
+    }
+
+    /**
+     * Get form data ready for API response
+     */
+    public function toApiResource(): array
+    {
+        return [
+            'id' => $this->id,
+            'code' => $this->code,
+            'name' => $this->settings?->name ?? 'Untitled Form',
+            'description' => $this->settings?->description,
+            'schema' => $this->schema,
+            'status' => $this->status,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+        ];
+    }
+
+    /**
+     * Get submissions as API response
+     */
+    public function getSubmissionsForApi($limit = 50, $page = 1)
+    {
+        return $this->submissions()
+            ->orderBy('created_at', 'desc')
+            ->paginate($limit, ['*'], 'page', $page);
+    }
+
 
     public function shareFormViaMail($email, $data)
     {
