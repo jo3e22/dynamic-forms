@@ -71,6 +71,8 @@ return array(
     'App\\Providers\\FortifyServiceProvider' => $baseDir . '/app/Providers/FortifyServiceProvider.php',
     'App\\Services\\ActivityLogService' => $baseDir . '/app/Services/ActivityLogService.php',
     'App\\Services\\EmailService' => $baseDir . '/app/Services/EmailService.php',
+    'App\\Services\\FormApiClient' => $baseDir . '/app/Services/FormApiClient.php',
+    'App\\Services\\FormApiIntegrationService' => $baseDir . '/app/Services/FormApiIntegrationService.php',
     'App\\Services\\FormService' => $baseDir . '/app/Services/FormService.php',
     'App\\Services\\FormSettingsService' => $baseDir . '/app/Services/FormSettingsService.php',
     'App\\Services\\NotificationService' => $baseDir . '/app/Services/NotificationService.php',

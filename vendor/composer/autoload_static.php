@@ -718,6 +718,8 @@ class ComposerStaticInit04baa661c0f7ae5c9d6dd97e2acdfc3d
         'App\\Providers\\FortifyServiceProvider' => __DIR__ . '/../..' . '/app/Providers/FortifyServiceProvider.php',
         'App\\Services\\ActivityLogService' => __DIR__ . '/../..' . '/app/Services/ActivityLogService.php',
         'App\\Services\\EmailService' => __DIR__ . '/../..' . '/app/Services/EmailService.php',
+        'App\\Services\\FormApiClient' => __DIR__ . '/../..' . '/app/Services/FormApiClient.php',
+        'App\\Services\\FormApiIntegrationService' => __DIR__ . '/../..' . '/app/Services/FormApiIntegrationService.php',
         'App\\Services\\FormService' => __DIR__ . '/../..' . '/app/Services/FormService.php',
         'App\\Services\\FormSettingsService' => __DIR__ . '/../..' . '/app/Services/FormSettingsService.php',
         'App\\Services\\NotificationService' => __DIR__ . '/../..' . '/app/Services/NotificationService.php',
