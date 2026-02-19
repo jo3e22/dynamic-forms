@@ -3,7 +3,7 @@
         'name' => 'laravel/vue-starter-kit',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'a1e010ff476e7c93f139006e0f8d967b2e94597c',
+        'reference' => 'f1eecb563699f50a0a24f5e17eebc57cec71c000',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -499,6 +499,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'laravel/sanctum' => array(
+            'pretty_version' => 'v4.3.1',
+            'version' => '4.3.1.0',
+            'reference' => 'e3b85d6e36ad00e5db2d1dcc27c81ffdf15cbf76',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../laravel/sanctum',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'laravel/serializable-closure' => array(
             'pretty_version' => 'v2.0.7',
             'version' => '2.0.7.0',
@@ -520,7 +529,7 @@
         'laravel/vue-starter-kit' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'a1e010ff476e7c93f139006e0f8d967b2e94597c',
+            'reference' => 'f1eecb563699f50a0a24f5e17eebc57cec71c000',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

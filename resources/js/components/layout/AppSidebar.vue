@@ -50,6 +50,11 @@ const footerNavItems = [
     //    href: 'https://laravel.com/docs/starter-kits#vue',
     //    icon: BookOpen,
     //},
+    {
+        title: 'Privacy Policy',
+        href: '/privacy-policy',
+        icon: FileText,
+    },
 ];
 </script>
 
