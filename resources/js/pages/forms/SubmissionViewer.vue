@@ -5,7 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Calendar, CheckCircle2, Clock, XCircle, List, LayoutGrid, Table, Users, FileText } from 'lucide-vue-next';
+import { ArrowLeft, User, Calendar, CheckCircle2, Clock, XCircle, List, LayoutGrid, Table, Users, FileText, Download } from 'lucide-vue-next';
 import type { FormDTO, FormBuilderData } from '@/types';
 import StatsCard from '@/components/common/StatsCard.vue';
 import SubmissionCard from '@/components/submissions/SubmissionCard.vue';
@@ -190,6 +190,11 @@ function getSubmitterName(submission: Submission): string {
   }
   return 'Anonymous';
 }
+
+// Export submissions as CSV
+function exportAsCSV() {
+  window.location.href = `/forms/${props.form.code}/submissions/export`;
+}
 </script>
 
 <template>
@@ -243,6 +248,14 @@ function getSubmitterName(submission: Submission): string {
               >
                 <Table class="w-4 h-4 mr-2" />
                 Table
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                @click="exportAsCSV"
+              >
+                <Download class="w-4 h-4 mr-2" />
+                Export CSV
               </Button>
             </div>
           </template>

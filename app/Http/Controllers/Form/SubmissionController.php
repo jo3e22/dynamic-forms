@@ -13,6 +13,7 @@ use App\Services\EmailService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SubmissionController extends Controller
 {
@@ -183,6 +184,60 @@ class SubmissionController extends Controller
                 'secondary_color' => $form->secondary_color,
             ],
             'formTitle' => $formTitle,
+        ]);
+    }
+
+    public function export(Form $form): StreamedResponse
+    {
+        $submissions = $form->submissions()
+            ->with(['submissionFields'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get all form fields to use as CSV headers
+        $formFields = $form->fields()->get();
+
+        $filename = 'submissions_' . $form->code . '_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        return response()->streamDownload(function () use ($submissions, $formFields, $form) {
+            $handle = fopen('php://output', 'w');
+
+            // Write CSV headers
+            $headers = ['Submission ID', 'Email', 'Respondent Name', 'Status', 'Submitted At'];
+            
+            // Add form field names as headers
+            foreach ($formFields as $field) {
+                $headers[] = $field->label;
+            }
+
+            fputcsv($handle, $headers);
+
+            // Write submission data
+            foreach ($submissions as $submission) {
+                $row = [
+                    $submission->code,
+                    $submission->email,
+                    $submission->guest_name,
+                    $submission->status,
+                    $submission->created_at->format('Y-m-d H:i:s'),
+                ];
+
+                // Add submission field answers
+                foreach ($formFields as $field) {
+                    $answer = $submission->submissionFields
+                        ->where('form_field_id', $field->id)
+                        ->first()?->answer ?? '';
+                    
+                    $row[] = is_array($answer) ? json_encode($answer) : $answer;
+                }
+
+                fputcsv($handle, $row);
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 }

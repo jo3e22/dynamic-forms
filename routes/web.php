@@ -50,6 +50,7 @@ Route::put('/forms/{form}/viewform/{submission}', [SubmissionController::class, 
 
 // Submission viewing
 Route::get('/forms/{form}/submissions', [SubmissionController::class, 'index'])->name('submissions.index');
+Route::get('/forms/{form}/submissions/export', [SubmissionController::class, 'export'])->name('submissions.export');
 Route::get('/forms/{form}/submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
 
 // JSON export (for debugging)
