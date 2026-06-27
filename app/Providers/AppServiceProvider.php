@@ -15,6 +15,9 @@ use App\Models\Email\EmailTemplate;
 use App\Policies\EmailTemplatePolicy;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
+
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -78,5 +81,9 @@ class AppServiceProvider extends ServiceProvider
                 ? Organisation::with('branding')->find(session('current_organisation_id'))
                 : null,
         ]);
+
+        Event::listen(SocialiteWasCalled::class, function (SocialiteWasCalled $event) {
+            $event->extendSocialite('authentik', \SocialiteProviders\Authentik\Provider::class);
+        });
     }
 }

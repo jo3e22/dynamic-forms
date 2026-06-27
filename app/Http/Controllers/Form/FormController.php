@@ -203,6 +203,9 @@ class FormController extends Controller
 
     public function show(Form $form)
     {
+        \Log::info('Showing form', ['form' => $form]);
+
+
         if ($form->user_id !== Auth::id()) {
             abort(403, 'Unauthorized');
         }

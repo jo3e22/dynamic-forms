@@ -40,4 +40,12 @@ return [
         'key' => env('FORM_API_KEY', ''),
     ],
 
+    'authentik' => [
+        'client_id'     => env('AUTHENTIK_CLIENT_ID'),
+        'client_secret' => env('AUTHENTIK_CLIENT_SECRET'),
+        'redirect'      => env('AUTHENTIK_REDIRECT_URI'),
+        'base_url'      => env('AUTHENTIK_BASE_URL'),
+        'slug'          => env('AUTHENTIK_SLUG'),
+    ],
+
 ];
